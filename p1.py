@@ -31,14 +31,15 @@ while True:
         fourcc = cv2.VideoWriter_fourcc('M', 'P', 'G', '4')
         out = cv2.VideoWriter('Vidéos/enregistrement.mp4', fourcc, 20.0, (1280, 720))
         while True:
-            im= picam2.capture_array()
+                
             out.write(im)
             cv2.imshow("Camera", im)
             if cv2.waitKey(1)==ord('q'):
                 break
         cv2.destroyAllWindows()
         out.release
-        #video = cv2.VideoCapture(cv2.CAP_V4L2)#v0)
+        #video = cv2.import serial
+import cv2VideoCapture(cv2.CAP_V4L2)#v0)
         #frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
         #frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
         #fourcc = cv2.VideoWriter_fourcc(*'mp4v')
