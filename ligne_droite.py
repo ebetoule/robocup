@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time
 import serial
 from picamera2 import Picamera2
 #size = (1280,720)
@@ -52,13 +53,17 @@ def gauche(vitesse):
     s.write(f'B{vitesse}\n'.encode())
 
 picam2 = init_pycam()
-
+last = 0
 while 1:#(video.isOpened()):
   # lire chaque image une par une
     #ret, frame = video.read()
     frame = picam2.capture_array()
     
     if True:
+        temps = time.time()
+        duree = temps - last
+        last = temps
+        print(duree)
         frame = cv2.rotate(frame, cv2.ROTATE_180)
         irow = -10
         dim_y, dim_x, _ = frame.shape
@@ -82,7 +87,7 @@ while 1:#(video.isOpened()):
             droite(vitesse)
         
         cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
-        cv2.imshow('frame', frame)
+        #cv2.imshow('frame', frame)
         key = cv2.waitKey(20)
         if key == ord('q'):
             s.write(b'C0\n')

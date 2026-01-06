@@ -2,8 +2,8 @@ import cv2
 # lire la vidéo
 vid_capture = cv2.VideoCapture(0)
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640,  480))
+fourcc = cv2.VideoWriter_fourcc(*'MPV4')
+out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (640,  480))
  
 if (vid_capture.isOpened() == False):
     print("Error opening the video file")
