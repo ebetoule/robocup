@@ -1,6 +1,9 @@
 import cv2
 # lire la vidéo
 vid_capture = cv2.VideoCapture(0)
+
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640,  480))
  
 if (vid_capture.isOpened() == False):
     print("Error opening the video file")
@@ -16,12 +19,13 @@ while(vid_capture.isOpened()):
   # lire chaque image une par une
     ret, frame = vid_capture.read()
     if ret == True:
-      cv2.imshow('Frame',frame)
+        out.write(frame)
+        cv2.imshow('Frame',frame)
     # 20 est en milliseconde
-      key = cv2.waitKey(20)
+        key = cv2.waitKey(20)
      
-      if key == ord('q'):
-        break
+        if key == ord('q'):
+            break
     else:
       break
  

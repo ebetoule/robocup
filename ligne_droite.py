@@ -43,6 +43,14 @@ def get_barycentre(frame, irow=-10, seuil=50):
     barycentre = barycentre / denominateur
     return barycentre
 
+def droite(vitesse):
+    s.write(f'A{vitesse}\n'.encode())
+    s.write(b'B0\n')
+    
+def gauche(vitesse):
+    s.write(b'A0\n')
+    s.write(f'B{vitesse}\n'.encode())
+
 picam2 = init_pycam()
 
 while 1:#(video.isOpened()):
@@ -68,12 +76,10 @@ while 1:#(video.isOpened()):
             s.write(f'C{vitesse}\n'.encode())
         if barint > centre :
             print('à gauche')
-            s.write(b'A0\n')
-            s.write(f'B{vitesse}\n'.encode())
+            gauche(vitesse)
         if barint < centre :
             print('à droite')
-            s.write(f'A{vitesse}\n'.encode())
-            s.write(b'B0\n')
+            droite(vitesse)
         
         cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
         cv2.imshow('frame', frame)
