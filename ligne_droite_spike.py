@@ -5,7 +5,7 @@ from buildhat import Motor
 from picamera2 import Picamera2
 #size = (1280,720)
 size = (640,480)
-vitesse = 40
+vitesse = 30
 motor_right = Motor('B')
 motor_left = Motor('A')
 
@@ -71,7 +71,7 @@ while 1:#(video.isOpened()):
         temps = time.time()
         duree = temps - last
         last = temps
-        print(duree)
+        #print(duree)
         #frame = cv2.rotate(frame, cv2.ROTATE_180)
         irow = -10
         dim_y, dim_x, _ = frame.shape
@@ -79,6 +79,7 @@ while 1:#(video.isOpened()):
         barycentre = get_barycentre(frame, irow=irow)
         
         difference = (centre - barycentre)
+        
         if not np.isfinite(barycentre):
             print("perte de la ligne")
             barycentre = centre
@@ -87,14 +88,17 @@ while 1:#(video.isOpened()):
         barint = int(barycentre)
         if difference == 0 :
             print('En avant')
+            print(vitesse)
             avancer(vitesse)
         if difference > 0 :
             print('à gauche')
+            print(vitesse)
             droit(vitesse)
             gauche(2 * vitesse / np.abs(difference))
         if difference < 0 :
             print('à droite')
             gauche(vitesse)
+            print(vitesse)
             droit(2 * vitesse / np.abs(difference))
         
         cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
@@ -104,6 +108,8 @@ while 1:#(video.isOpened()):
             stop()
             break
     else:
+        stop()
         break
 
 cv2.destroyAllWindows()
+stop()
