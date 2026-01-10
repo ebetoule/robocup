@@ -22,7 +22,7 @@ def init_pycam():
 #video = cv2.VideoCapture(0)
 
 
-def get_barycentre(frame, irow=-10, seuil=50):
+def get_barycentre(frame, irow=-5, seuil=50):
     """ renvoie le barycentre
     1. transforme en gris
     2. applique un seuil
@@ -47,9 +47,15 @@ def get_barycentre(frame, irow=-10, seuil=50):
     return barycentre
 
 def droit(vitesse):
+    vitesse = max(vitesse, -100)
+    vitesse = min(vitesse, 100)
+    print("droit", vitesse)
     motor_right.start(vitesse)
     
 def gauche(vitesse):
+    vitesse = max(vitesse, -100)
+    vitesse = min(vitesse, 100)
+    print("gauche", -vitesse)
     motor_left.start(-vitesse)
     
 def stop():
@@ -60,56 +66,55 @@ def avancer(vitesse):
     motor_right.start(vitesse)
     motor_left.start(-vitesse)
 
+def suivi(difference, barycentre):
+    if not np.isfinite(barycentre):
+        print("perte de la ligne")
+        barycentre = centre
+        print('STOP')
+        stop()
+    barint = int(barycentre)
+    if difference == 0 :
+        print('En avant')
+        print(vitesse)
+        avancer(vitesse)
+    if difference > 0 :
+        print('à gauche')
+        droit(vitesse)
+        gauche(2 * vitesse / np.abs(difference))
+    if difference < 0 :
+        print('à droite')
+        gauche(vitesse)
+        print(vitesse)
+        droit(2 * vitesse / np.abs(difference))
+    return barint
+
 picam2 = init_pycam()
 last = 0
-while 1:#(video.isOpened()):
+try:
+    while 1:#(video.isOpened()):
   # lire chaque image une par une
     #ret, frame = video.read()
-    frame = picam2.capture_array()
-    
-    if True:
+        frame = picam2.capture_array()
+
         temps = time.time()
         duree = temps - last
         last = temps
         #print(duree)
-        #frame = cv2.rotate(frame, cv2.ROTATE_180)
-        irow = -10
+        irow = -5
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2
         barycentre = get_barycentre(frame, irow=irow)
-        
         difference = (centre - barycentre)
+        barint = suivi(difference, barycentre)
         
-        if not np.isfinite(barycentre):
-            print("perte de la ligne")
-            barycentre = centre
-            print('STOP')
-            stop()
-        barint = int(barycentre)
-        if difference == 0 :
-            print('En avant')
-            print(vitesse)
-            avancer(vitesse)
-        if difference > 0 :
-            print('à gauche')
-            print(vitesse)
-            droit(vitesse)
-            gauche(2 * vitesse / np.abs(difference))
-        if difference < 0 :
-            print('à droite')
-            gauche(vitesse)
-            print(vitesse)
-            droit(2 * vitesse / np.abs(difference))
-        
-        cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
+        #cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
         #cv2.imshow('frame', frame)
-        key = cv2.waitKey(20)
-        if key == ord('q'):
-            stop()
-            break
-    else:
-        stop()
-        break
+        #key = cv2.waitKey(20)
+        #if key == ord('q'):
+            #stop()
+            #break
 
+except KeyboardInterrupt:
+    stop()
 cv2.destroyAllWindows()
 stop()
