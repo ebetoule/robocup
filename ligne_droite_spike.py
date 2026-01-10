@@ -46,13 +46,11 @@ def get_barycentre(frame, irow=-10, seuil=50):
     barycentre = barycentre / denominateur
     return barycentre
 
-def droite(vitesse):
-    motor_right.stop()
-    motor_left.start(-vitesse)
+def droit(vitesse):
+    motor_right.start(vitesse)
     
 def gauche(vitesse):
-    motor_right.start(vitesse)
-    motor_left.stop()
+    motor_left.start(-vitesse)
     
 def stop():
     motor_right.stop()
@@ -78,23 +76,26 @@ while 1:#(video.isOpened()):
         irow = -10
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2
-    
         barycentre = get_barycentre(frame, irow=irow)
+        
+        difference = (centre - barycentre)
         if not np.isfinite(barycentre):
             print("perte de la ligne")
             barycentre = centre
             print('STOP')
             stop()
         barint = int(barycentre)
-        if barint == centre :
+        if difference == 0 :
             print('En avant')
             avancer(vitesse)
-        if barint > centre :
+        if difference > 0 :
             print('à gauche')
-            droite(vitesse)
-        if barint < centre :
+            droit(vitesse)
+            gauche(2 * vitesse / np.abs(difference))
+        if difference < 0 :
             print('à droite')
             gauche(vitesse)
+            droit(2 * vitesse / np.abs(difference))
         
         cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
         #cv2.imshow('frame', frame)
