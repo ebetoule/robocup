@@ -45,7 +45,7 @@ while 1:#(video.isOpened()):
     frame = picam2.capture_array()
     
     if True:
-        frame = cv2.rotate(frame, cv2.ROTATE_180)
+        #frame = cv2.rotate(frame, cv2.ROTATE_180)
         irow = -10
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2

@@ -3,26 +3,30 @@ import numpy as np
 import time
 from buildhat import Motor
 from picamera2 import Picamera2
+from pprint import *
 #size = (1280,720)
 size = (640,480)
+#size = (480, 270)
 vitesse = 30
+irow = -5
 motor_right = Motor('B')
 motor_left = Motor('A')
 
 def init_pycam():
     picam2 = Picamera2()
-    picam2.preview_configuration.main.size = size#(1280,720)
-    picam2.preview_configuration.main.format = "RGB888"
-    picam2.preview_configuration.align()
-    picam2.configure("preview")
+    #qpprint(picam2.sensor_modes)
+    config = picam2.create_still_configuration(
+        main={"size": size,"format": "RGB888"}, # scale down the image, but maintain the full field of view
+        raw={'size': (3280, 2464)},
+        buffer_count=2,
+        #controls={'FrameRate': 50},
+    )
+    picam2.configure(config)#"preview")
     picam2.start()
     return picam2
 
 
-#video = cv2.VideoCapture(0)
-
-
-def get_barycentre(frame, irow=-5, seuil=50):
+def get_barycentre(frame, irow, seuil=50):
     """ renvoie le barycentre
     1. transforme en gris
     2. applique un seuil
@@ -37,25 +41,23 @@ def get_barycentre(frame, irow=-5, seuil=50):
     tabimage01 = tabimage.copy()
     tabimage01[tabimage==255] = 0
     tabimage01[tabimage==0] = 1
+    sommew = np.sum(tabimage01[irow, :])
+    if sommew == 0:
+        return np.nan
+    barycentre = np.average(np.arange(dim_x), weights=tabimage01[irow, :])
     
-    barycentre = 0
-    denominateur = 0
-    for i in range(dim_x):
-        barycentre = barycentre + float(i) * tabimage01[irow,i]
-        denominateur = denominateur + tabimage01[irow,i]
-    barycentre = barycentre / denominateur
     return barycentre
 
 def droit(vitesse):
     vitesse = max(vitesse, -100)
     vitesse = min(vitesse, 100)
-    print("droit", vitesse)
+    #print("droit", vitesse)
     motor_right.start(vitesse)
     
 def gauche(vitesse):
     vitesse = max(vitesse, -100)
     vitesse = min(vitesse, 100)
-    print("gauche", -vitesse)
+    #print("gauche", -vitesse)
     motor_left.start(-vitesse)
     
 def stop():
@@ -74,38 +76,45 @@ def suivi(difference, barycentre):
         stop()
     barint = int(barycentre)
     if difference == 0 :
-        print('En avant')
-        print(vitesse)
+        #print('En avant')
         avancer(vitesse)
     if difference > 0 :
-        print('à gauche')
+        #print('à gauche')
         droit(vitesse)
         gauche(2 * vitesse / np.abs(difference))
     if difference < 0 :
-        print('à droite')
+        #print('à droite')
         gauche(vitesse)
-        print(vitesse)
         droit(2 * vitesse / np.abs(difference))
     return barint
 
 picam2 = init_pycam()
 last = 0
+lecture = False
 try:
     while 1:#(video.isOpened()):
   # lire chaque image une par une
     #ret, frame = video.read()
         frame = picam2.capture_array()
 
-        temps = time.time()
-        duree = temps - last
-        last = temps
-        #print(duree)
-        irow = -5
+        #temps = time.time()
+        #duree = temps - last
+        #last = temps
+        #print(duree * 1000)
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2
-        barycentre = get_barycentre(frame, irow=irow)
+        barycentre = get_barycentre(frame, irow)
+        
         difference = (centre - barycentre)
-        barint = suivi(difference, barycentre)
+        if lecture:
+            #cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
+            cv2.imshow('frame', frame)
+            key = cv2.waitKey(20)
+            if key == ord('q'):
+                stop()
+                break
+        else:
+            barint = suivi(difference, barycentre)
         
         #cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
         #cv2.imshow('frame', frame)
