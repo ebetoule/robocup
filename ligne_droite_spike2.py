@@ -11,7 +11,7 @@ vitesse = 30
 irow = -5
 motor_right = Motor('B')
 motor_left = Motor('A')
-trajectoire = []
+trajectoire = np.zeros((100))
 def init_pycam():
     picam2 = Picamera2()
     #qpprint(picam2.sensor_modes)
@@ -67,13 +67,23 @@ def stop():
 def avancer(vitesse):
     motor_right.start(vitesse)
     motor_left.start(-vitesse)
+    
+def courbe(trajectoire, index):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(1,1)
+    ax.plot(trajectoire)
+    ax.axvline(x=index, color='r')
+    plt.show()
 
-def suivi(difference, barycentre):
+def suivi(difference, barycentre, dernier, avant):
     if not np.isfinite(barycentre):
         print("perte de la ligne")
-        #barycentre = centre
         stop()
-    barint = int(barycentre)
+        print(avant, dernier)
+        if avant < dernier:
+            gauche(vitesse)
+        if avant > dernier:
+            droite(vitesse)
     if difference == 0 :
         #print('En avant')
         avancer(vitesse)
@@ -85,17 +95,17 @@ def suivi(difference, barycentre):
         #print('à droite')
         gauche(vitesse)
         droit(2 * vitesse / np.abs(difference))
-    return barint
 
 picam2 = init_pycam()
 last = 0
 lecture = False
+index = 0
 try:
     while 1:#(video.isOpened()):
   # lire chaque image une par une
     #ret, frame = video.read()
         frame = picam2.capture_array()
-
+    
         #temps = time.time()
         #duree = temps - last
         #last = temps
@@ -103,27 +113,20 @@ try:
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2
         barycentre = get_barycentre(frame, irow)
-        trajectoire.append(barycentre)
-        if not np.isfinite(barycentre):
-            print("perte de la ligne")
-            stop()
-            dernier = trajectoire[-1]
-            avant = trajectoire[-4]
-            while np.isfinite(barycentre):
-                if avant < dernier :
-                    gauche(vitesse)
-                else:
-                    droite(vitesse)
+        if np.isfinite(barycentre):
+            index = (index+1)%100
+            trajectoire[index] = barycentre
         difference = (centre - barycentre)
+        barint = int(barycentre) if np.isfinite(barycentre) else -1
         if lecture:
-            #cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
+            cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
             cv2.imshow('frame', frame)
             key = cv2.waitKey(20)
             if key == ord('q'):
                 stop()
                 break
         else:
-            barint = suivi(difference, barycentre)
+            suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
         
         #cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
         #cv2.imshow('frame', frame)
