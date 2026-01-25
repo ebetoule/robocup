@@ -4,6 +4,9 @@ import time
 from buildhat import Motor
 from picamera2 import Picamera2
 from pprint import *
+import threading
+import queue
+
 
 #size = (1280,720)
 size = (640,480)
@@ -26,7 +29,19 @@ def init_pycam():
     picam2.start()
     return picam2
 
-
+def recording_thread(q, output_file, fps=15, size):
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Codec efficace
+    writer = cv2.VideoWriter(output_file, fourcc, fps, size)
+    while True:
+        frame = q.get()
+        if frame is None:  # Signal de fin
+            break
+        # Resize pour réduire la taille (optionnel)
+        frame = cv2.resize(frame, (width, height))
+        writer.write(frame)
+    writer.release()
+    
+    
 def get_barycentre(frame, irow, seuil=50):
     """ renvoie le barycentre
     1. transforme en gris
@@ -99,6 +114,11 @@ picam2 = init_pycam()
 last = 0
 lecture = False
 index = 0
+frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
+
+rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, 'output.avi'))
+rec_thread.start()
+
 try:
     while 1:
         frame = picam2.capture_array()
@@ -119,8 +139,16 @@ try:
                 break
         else:
             suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
+        if not frame_queue.full():
+            frame_queue.put(frame.copy())
 
 except KeyboardInterrupt:
     stop()
+    frame_queue.put(None)
+    rec_thread.join()
+    cap.release()
+frame_queue.put(None)
+rec_thread.join()
+cap.release()
 cv2.destroyAllWindows()
 stop()
