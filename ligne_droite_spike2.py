@@ -16,6 +16,7 @@ irow = -5
 motor_right = Motor('B')
 motor_left = Motor('A')
 trajectoire = np.zeros((100))
+fps = 15
 
 def init_pycam():
     picam2 = Picamera2()
@@ -29,9 +30,9 @@ def init_pycam():
     picam2.start()
     return picam2
 
-def recording_thread(q, output_file, fps=15, size):
+def recording_thread(q, output_file, fps=15, width=320, height=240):
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Codec efficace
-    writer = cv2.VideoWriter(output_file, fourcc, fps, size)
+    writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
     while True:
         frame = q.get()
         if frame is None:  # Signal de fin
@@ -100,13 +101,16 @@ def suivi(difference, barycentre, dernier, avant):
         if avant < dernier:
             gauche(vitesse)
         if avant > dernier:
-            droite(vitesse)
+            droit(vitesse)
     if difference == 0 :
+        print("En avant")
         avancer(vitesse)
     if difference > 0 :
+        print("à gauche")
         droit(vitesse)
         gauche(2 * vitesse / np.abs(difference))
     if difference < 0 :
+        print("à droite")
         gauche(vitesse)
         droit(2 * vitesse / np.abs(difference))
 
