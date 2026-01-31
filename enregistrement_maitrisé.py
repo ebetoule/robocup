@@ -4,10 +4,13 @@ import queue
 import time
 import buildhat
 from buildhat import Motor
+from picamera2 import Picamera2
 
 motor_right = Motor('A')
 motor_left = Motor('B')
 speed = 50
+size = (640,480)
+
 
 def tout_droit(speed):
     motor_right.start(speed)
@@ -26,9 +29,9 @@ def stop():
     motor_left.stop()
 
 # Fonction pour le thread d'enregistrement
-def recording_thread(q, output_file, fps=15, size):
+def recording_thread(q, output_file, fps=15, width=320, height=240):
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Codec efficace
-    writer = cv2.VideoWriter(output_file, fourcc, fps, size)
+    writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
     while True:
         frame = q.get()
         if frame is None:  # Signal de fin
@@ -39,11 +42,17 @@ def recording_thread(q, output_file, fps=15, size):
     writer.release()
 
 # Setup caméra Arducam (ajustez l'index si nécessaire)
-cap = cv2.VideoCapture(0)  # Ou 'v4l2src device=/dev/video0 ! video/x-raw,width=640,height=480 ! videoconvert ! appsink' avec GStreamer
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-cap.set(cv2.CAP_PROP_FPS, 30)
-cap.set(cv2.CAP_PROP_BUFFERSIZE, 2)  # Limite buffer pour faible latence
+def init_pycam():
+    picam2 = Picamera2()
+    config = picam2.create_still_configuration(
+        main={"size": size,"format": "RGB888"}, # scale down the image, but maintain the full field of view
+        raw={'size': (3280, 2464)},
+        buffer_count=2,
+        #controls={'FrameRate': 50},
+    )
+    picam2.configure(config)#"preview")
+    picam2.start()
+    return picam2
 
 # Queue pour passer les frames à enregistrer
 frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
@@ -53,10 +62,10 @@ rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, 'outpu
 rec_thread.start()
 
 # Boucle principale : Capture, traitement, contrôle moteurs
+picam2 = init_pycam()
 while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+    frame = picam2.capture_array()
+        
     
     key = input()
     if key =='a' :
