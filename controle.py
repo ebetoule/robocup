@@ -25,15 +25,13 @@ while True:
     key = input()
     if key =='a' :
         print('En avant')
-        s.write(b'C30\n')
+        tout_droit(speed)
     if key == 'g':
         print('à gauche')
-        s.write(b'A0\n')
-        s.write(b'B30\n')
+        gauche(speed)
     if key == 'd':
         print('à droite')
-        s.write(b'A30\n')
-        s.write(b'B0\n')
+        droite(speed)
     if key == 's' :
         print('STOP')
-        s.write(b'C0\n')
+        stop()
