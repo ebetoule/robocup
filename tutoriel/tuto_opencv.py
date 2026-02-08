@@ -1,5 +1,7 @@
 import cv2
+size = (640,480)
 image = cv2.imread('test.jpg',-1)
+image = cv2.resize(image, [640, 480])
 img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 #convertir image
 # apply binary thresholding
