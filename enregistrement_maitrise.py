@@ -5,18 +5,13 @@ import time
 import buildhat
 from buildhat import Motor
 from picamera2 import Picamera2
-import curses
+from pynput import keyboard
+from pynput.keyboard import Key
 
-stdscr = curses.initscr()
 motor_right = Motor('A')
 motor_left = Motor('B')
 speed = 10
 size = (640,480)
-curses.noecho()
-#curses.cbreak()
-stdscr.keypad(True)
-#stdscr.nodelay(True)
-#stdscr.timeout(30)
 
 def tout_droit(speed):
     motor_right.start(speed)
@@ -64,6 +59,20 @@ def init_pycam():
     picam2.start()
     return picam2
 
+def on_press(key):
+    global keypressed
+    if key == Key.left:
+        print("à gauche")
+        gauche(speed)
+    if key == Key.right:
+        print("à droite")
+    if key == Key.up:
+        print("en avant")
+        tout_droit(speed)
+    if key == Key.down:
+        print("stop")
+        stop()
+
 # Queue pour passer les frames à enregistrer
 frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
 
@@ -73,30 +82,20 @@ rec_thread.start()
 
 # Boucle principale : Capture, traitement, contrôle moteurs
 picam2 = init_pycam()
+
+# écoute les entrées clavier
+listener = keyboard.Listener(on_press=on_press)
+listener.start()
+
 while True:
+
     frame = picam2.capture_array()
-    
-    key = stdscr.getkey()
-    if key == curses.KEY_UP :
-        print('En avant')
-        tout_droit(speed)
-    if key == curses.KEY_LEFT:
-        print('à gauche')
-        gauche(speed)
-    if key == curses.KEY_RIGHT:
-        print('à droite')
-        droite(speed)
-    if key == curses.KEY_DOWN :
-        print('STOP')
-        stop()
-        break
-
-
-    
     # Passe une copie du frame à la queue pour enregistrement (sans bloquer)
     if not frame_queue.full():
         frame_queue.put(frame.copy())  # Copie pour éviter modification partagée
-    
+
+    if keypressed == Key.down:
+        break()
     # Optionnel : Affichez pour debug (mais évitez si pas nécessaire, car ça ralentit)
     # cv2.imshow('Frame', frame)
     # if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -106,3 +105,4 @@ while True:
 frame_queue.put(None)
 rec_thread.join()
 cv2.destroyAllWindows()
+listener.stop()
