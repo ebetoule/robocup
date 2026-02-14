@@ -31,7 +31,7 @@ def init_pycam():
     return picam2
 
 def recording_thread(q, output_file, fps=15, width=320, height=240):
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Codec efficace
+    fourcc = cv2.VideoWriter_fourcc(*'mpv4')  # Codec efficace
     writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
     while True:
         frame = q.get()
@@ -120,7 +120,7 @@ lecture = False
 index = 0
 frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
 
-rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, 'output.avi'))
+rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, 'test2.mp4'))
 rec_thread.start()
 
 try:
