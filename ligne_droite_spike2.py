@@ -30,15 +30,20 @@ def init_pycam():
     picam2.start()
     return picam2
 
-def recording_thread(q, output_file, fps=15, width=320, height=240):
-    fourcc = cv2.VideoWriter_fourcc(*'mpv4')  # Codec efficace
-    writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
+
+def recording_thread(q, nom, fps=15):
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec efficace
+    writer = cv2.VideoWriter(nom, fourcc, fps, size)#(width, height))
+    print("debut de l'enregistrement")
+    nframe = 0
     while True:
+        nframe += 1
         frame = q.get()
         if frame is None:  # Signal de fin
+            print(f"Arret de l'enregistrement apres {nframe} images")
             break
         # Resize pour réduire la taille (optionnel)
-        frame = cv2.resize(frame, (width, height))
+        #frame = cv2.resize(frame, (width, height))
         writer.write(frame)
     writer.release()
     
