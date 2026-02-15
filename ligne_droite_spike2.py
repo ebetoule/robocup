@@ -6,8 +6,10 @@ from picamera2 import Picamera2
 from pprint import *
 import threading
 import queue
+from datetime import datetime
 
-
+now = datetime.now()
+filename = now.strftime("%m-%d-%Y_%H-%M-%S")+".mp4"
 #size = (1280,720)
 size = (640,480)
 #size = (480, 270)
@@ -125,7 +127,7 @@ lecture = False
 index = 0
 frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
 
-rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, 'test2.mp4'))
+rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename))
 rec_thread.start()
 
 try:
