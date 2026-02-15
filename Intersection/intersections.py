@@ -41,9 +41,9 @@ if lines is not None:
         pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
         cv.line(cdst, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
     
-#cv.imshow("Source", src)
-#cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
+cv.imshow("Source", src)
+cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
 #cv.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
 
-#cv.waitKey()
-#cv.destroyAllWindows() 
+cv.waitKey()
+cv.destroyAllWindows() 
