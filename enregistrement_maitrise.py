@@ -49,9 +49,10 @@ def recording_thread(q, nom, fps=15):
 # Setup caméra Arducam (ajustez l'index si nécessaire)
 def init_pycam():
     picam2 = Picamera2()
+    mode = picam2.sensor_modes[1]
     config = picam2.create_still_configuration(
-        main={"size": size,"format": "RGB888"}, # scale down the image, but maintain the full field of view
-        raw={'size': (3280, 2464)},
+        sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']},
+        main={"size": size }, # scale down the image, but maintain the full field of view
         buffer_count=2,
         #controls={'FrameRate': 50},
     )
