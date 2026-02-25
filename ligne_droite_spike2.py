@@ -10,8 +10,8 @@ from datetime import datetime
 
 now = datetime.now()
 filename = now.strftime("%m-%d-%Y_%H-%M-%S")+".mp4"
-size = (1280,720)
-#size = (640,480)
+#size = (1280,720)
+size = (640,480)
 #size = (480, 270)
 vitesse = 20
 irow = -5
@@ -25,7 +25,6 @@ def init_pycam():
     mode = picam2.sensor_modes[1]
     config = picam2.create_still_configuration(
         sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']},
-        main={"size": size }, # scale down the image, but maintain the full field of view
         buffer_count=2,
         #controls={'FrameRate': 50},
     )
@@ -69,6 +68,35 @@ def get_barycentre(frame, irow, seuil=50):
         return np.nan
     barycentre = np.average(np.arange(dim_x), weights=tabimage01[irow, :])
     return barycentre
+
+def tourner(degres):
+    degres = degres / 0.56
+    motor_left.run_for_degrees(degres, 10, False)
+    motor_right.run_for_degrees(degres, 10, False)
+
+def aller(distance):
+    dist = distance/0.075
+    motor_left.run_for_degrees(-dist, 10, False)
+    motor_right.run_for_degrees(dist, 10, False)
+
+
+    
+
+def clickandgo(x, y):
+    #mtx = np.array([[2.31301612e+04 0.00000000e+00 3.32043767e+02]
+    #                [0.00000000e+00 2.33779030e+03 5.06553366e+01]
+    #                [0.00000000e+00 0.00000000e+00 1.00000000e+00]]
+    #                )
+    #dist = np.array([[ 9.81528305e+01  6.83774322e+04  5.04370810e+00  3.42687995e-02 -1.65491124e+03]])
+    #pix = np.array([[[x, y]]])
+    #coord = cv.undistortPoints(pix, mtx, dist)
+    #x = coord[0]
+    #y = coord[1]
+    theta = np.arctan2(abs(320 - x), y)
+    dist = y * np.cos(theta)
+    theta = np.degrees(theta)
+    return theta, dist
+    
 
 def droit(vitesse):
     vitesse = max(vitesse, -100)
@@ -127,12 +155,21 @@ last = 0
 lecture = False
 index = 0
 frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
-
-rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename))
-rec_thread.start()
+go = True
+#rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename))
+#rec_thread.start()
 
 try:
     while 1:
+        if go:
+            x = int(input())
+            y = int(input())
+            degres, distance = clickandgo(x, y)
+            print(degres)
+            print(distance)
+            tourner(degres)
+            aller(distance)
+            break
         frame = picam2.capture_array()
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2
@@ -159,6 +196,6 @@ except KeyboardInterrupt:
     frame_queue.put(None)
     rec_thread.join()
 frame_queue.put(None)
-rec_thread.join()
+#rec_thread.join()
 cv2.destroyAllWindows()
 stop()
