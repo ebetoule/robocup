@@ -10,8 +10,8 @@ from datetime import datetime
 
 now = datetime.now()
 filename = now.strftime("%m-%d-%Y_%H-%M-%S")+".mp4"
-#size = (1280,720)
-size = (640,480)
+size = (1280,720)
+#size = (640,480)
 #size = (480, 270)
 vitesse = 30
 irow = -5
