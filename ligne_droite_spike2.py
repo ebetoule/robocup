@@ -85,15 +85,11 @@ def obtenir_coord(action, x, y, flags, userdata):
     
 
 def clickandgo(x, y):
-    #mtx = np.array([[2.31301612e+04 0.00000000e+00 3.32043767e+02]
-    #                [0.00000000e+00 2.33779030e+03 5.06553366e+01]
-    #                [0.00000000e+00 0.00000000e+00 1.00000000e+00]]
-    #                )
-    #dist = np.array([[ 9.81528305e+01  6.83774322e+04  5.04370810e+00  3.42687995e-02 -1.65491124e+03]])
-    #pix = np.array([[[x, y]]])
-    #coord = cv.undistortPoints(pix, mtx, dist)
-    #x = coord[0]
-    #y = coord[1]
+    m= np.array([[ 2.85224511e-02,  1.46455029e-02, -5.54372105e+00],
+               [ 1.21992854e-03,  6.51578808e-02, -7.25122927e+00],
+               [-1.82478137e-05,  5.31945922e-03,  1.00000000e+00]])
+    x = (M[0,0]*x + M[0,1]*y + M[0,2]) / (M[2,0]*x + M[2,1]*y + M[2,2])
+    y = (M[1,0]*x + M[1,1]*y + M[1,2]) / (M[2,0]*x + M[2,1]*y + M[2,2])
     theta = np.arctan2(abs(320 - x), y)
     dist = y * np.cos(theta)
     theta = np.degrees(theta)
