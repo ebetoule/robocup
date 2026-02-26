@@ -79,7 +79,9 @@ def aller(distance):
     motor_left.run_for_degrees(-dist, 10, False)
     motor_right.run_for_degrees(dist, 10, False)
 
-
+def obtenir_coord(action, x, y, flags, userdata):
+    if action == cv2.EVENT_LBUTTONDBLCLK:
+        return x, y
     
 
 def clickandgo(x, y):
@@ -161,16 +163,17 @@ go = True
 
 try:
     while 1:
+        frame = picam2.capture_array()
         if go:
-            x = int(input())
-            y = int(input())
+            cv2.imshow('coucou', frame)
+            x, y = cv2.setMouseCallback('coucou', obtenir_coord)
+            cv2.destroyAllWindows()
             degres, distance = clickandgo(x, y)
             print(degres)
             print(distance)
             tourner(degres)
             aller(distance)
             break
-        frame = picam2.capture_array()
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2
         barycentre = get_barycentre(frame, irow)
