@@ -37,6 +37,8 @@ if ret == True:
 
 pts1 = imgpoints[0].squeeze()[[0,5,30,35],:]
 pts2 = objpoints[0].squeeze()[[0,5,30,35],0:2]
+print(pts1)
+print(pts2)
 M = cv.getPerspectiveTransform(pts1,pts2)
 
 def apply_transform(x0, y0):

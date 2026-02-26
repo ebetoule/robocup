@@ -11,6 +11,6 @@ while True:
     cv2.imshow('coucou', image)
     cv2.setMouseCallback('coucou', obtenir_coord)
     key = cv2.waitKey(0)
-    if key == ord('k'):
+    if key == ord('q'):
         break
 cv2.destroyAllWindows()

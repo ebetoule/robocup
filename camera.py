@@ -1,28 +1,43 @@
 from picamera2 import Picamera2
 import matplotlib.pyplot as plt
 import cv2
-picam2 = Picamera2()
-
-
-sensor_modes = picam2.sensor_modes
-
-while True:
-    mode_num = int(input("Mode:"))
-    #size = int(input("Width:")), int(input("height:"))
-    mode = sensor_modes[mode_num]
-    print(f'Mode du capteur: {mode}')
-    config = picam2.create_still_configuration(sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-                                               #main={'size': size})
-    print(config)
-    picam2.configure(config)
+from pprint import pprint
+size = (640, 480)
+def init_pycam():
+    picam2 = Picamera2()
+    mode = picam2.sensor_modes[5]
+    config = picam2.create_still_configuration(
+        sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']},
+        buffer_count=2,
+        main={'size':size}
+        #controls={'FrameRate': 50},
+    )
+    picam2.configure(config)#"preview")
     picam2.start()
-    frame = picam2.capture_array()
+    return picam2
 
-    #cv2.imshow('', frame)
-    #plt.imshow(frame)
-    cv2.imwrite('ccn7.jpg',frame)
-#cv2.imshow('ccn', frame)
-    picam2.stop()
+if __name__=="__main__":
+    picam2 = Picamera2()
+    sensor_modes = picam2.sensor_modes
+    pprint(sensor_modes)
+
+    while True:
+        mode_num = int(input("Mode:"))
+        #size = int(input("Width:")), int(input("height:"))
+        mode = sensor_modes[mode_num]
+        print(f'Mode du capteur: {mode}')
+        config = picam2.create_still_configuration(sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+                                                   #main={'size': size})
+        print(config)
+        picam2.configure(config)
+        picam2.start()
+        frame = picam2.capture_array()
+
+        #cv2.imshow('', frame)
+        #plt.imshow(frame)
+        cv2.imwrite('ccn7.jpg',frame)
+        #cv2.imshow('ccn', frame)
+        picam2.stop()
 
 # def config1():
 #     config = picam2.create_still_configuration(

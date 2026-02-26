@@ -79,12 +79,8 @@ def aller(distance):
     motor_left.run_for_degrees(-dist, 10, False)
     motor_right.run_for_degrees(dist, 10, False)
 
-def obtenir_coord(action, x, y, flags, userdata):
-    if action == cv2.EVENT_LBUTTONDBLCLK:
-        return x, y
-    
 
-def clickandgo(x, y):
+def image2thetadist(x, y):
     m= np.array([[ 2.85224511e-02,  1.46455029e-02, -5.54372105e+00],
                [ 1.21992854e-03,  6.51578808e-02, -7.25122927e+00],
                [-1.82478137e-05,  5.31945922e-03,  1.00000000e+00]])
@@ -95,6 +91,14 @@ def clickandgo(x, y):
     theta = np.degrees(theta)
     return theta, dist
     
+def clickandgo(action, x, y, flags, userdata):
+    if action == cv2.EVENT_LBUTTONDBLCLK:
+        degres, distance = image2thetadist(x, y)
+        print(degres)
+        print(distance)
+        tourner(degres)
+        aller(distance)
+
 
 def droit(vitesse):
     vitesse = max(vitesse, -100)
@@ -102,7 +106,21 @@ def droit(vitesse):
     motor_right.start(vitesse)
     
 def gauche(vitesse):
-    vitesse = max(vitesse, -100)
+    vitesse = max(vitesse, -100)def recording_thread(q, nom, fps=15):
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec efficace
+    writer = cv2.VideoWriter(nom, fourcc, fps, size)#(width, height))
+    print("debut de l'enregistrement")
+    nframe = 0
+    while True:
+        nframe += 1
+        frame = q.get()
+        if frame is None:  # Signal de fin
+            print(f"Arret de l'enregistrement apres {nframe} images")
+            break
+        # Resize pour réduire la taille (optionnel)
+        #frame = cv2.resize(frame, (width, height))
+        writer.write(frame)
+    writer.release()
     vitesse = min(vitesse, 100)
     motor_left.start(-vitesse)
     
@@ -156,20 +174,15 @@ frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
 go = True
 #rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename))
 #rec_thread.start()
-
+frame = picam2.capture_array()
+cv2.imshow('coucou', frame)
+cv2.setMouseCallback('coucou', clickandgo)
 try:
     while 1:
         frame = picam2.capture_array()
-        if go:
+        if go: 
             cv2.imshow('coucou', frame)
-            x, y = cv2.setMouseCallback('coucou', obtenir_coord)
-            cv2.destroyAllWindows()
-            degres, distance = clickandgo(x, y)
-            print(degres)
-            print(distance)
-            tourner(degres)
-            aller(distance)
-            break
+            continue
         dim_y, dim_x, _ = frame.shape
         centre = dim_x // 2
         barycentre = get_barycentre(frame, irow)
@@ -191,9 +204,10 @@ try:
             frame_queue.put(frame.copy())
 
 except KeyboardInterrupt:
-    stop()
-    frame_queue.put(None)
-    rec_thread.join()
+    #stop()
+    #frame_queue.put(None)
+    #rec_thread.join()
+    pass
 frame_queue.put(None)
 #rec_thread.join()
 cv2.destroyAllWindows()
