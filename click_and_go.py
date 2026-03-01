@@ -29,18 +29,35 @@ def aller(distance):
     dist = distance/0.075
     motor_left.run_for_degrees(-dist, 10, False)
     motor_right.run_for_degrees(dist, 10, False)
-    
+
+nbfois = 1
+x1 = None
+y1 = None
+
 def obtenir_coord(action, x, y, flags, userdata):
+    global nbfois, x1, y1
     if action == cv2.EVENT_LBUTTONDBLCLK:
-        x1, y1 = image2damier(x, y)
-        print(f'coordonnées images: {x, y}, coordonnées damier:{x1, y1}')
-        theta = np.arctan2(x1, y1)
-        dist = np.sqrt(x1**2 + y1**2)
-        theta = np.degrees(theta)
-        print(f'angle = {theta}°, distance = {dist}cm')
-        tourner(-theta)
-        aller(dist)
-    
+        if nbfois == 2:
+            x2, y2 = image2damier(x, y)
+            theta1 = np.arctan2(x1, y1)
+            theta1 = np.degrees(theta1)
+            print(theta1)
+            theta2 = np.arctan2(x1 - x2, y2 - y1)
+            theta2 = np.degrees(theta2)
+            print(theta2)
+            theta3 = theta1 - theta2
+            print(theta3)
+            dist = np.sqrt(x1**2 + y1**2)
+            print(f'angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
+            tourner(-theta1)
+            aller(dist)
+            tourner(-theta3)
+            nbfois = 1
+        elif nbfois == 1:
+            x1, y1 = image2damier(x, y)
+            nbfois = nbfois + 1
+        
+
 def image2damier(x, y):
     ''' retourne les points de l'image obtenue par la camera en points réels'''
     #M = np.array([[ 2.85224511e-02,  1.46455029e-02, -5.54372105e+00],
