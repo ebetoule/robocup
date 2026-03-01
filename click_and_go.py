@@ -45,10 +45,10 @@ def obtenir_coord(action, x, y, flags, userdata):
             theta2 = np.arctan2(x1 - x2, y2 - y1)
             theta2 = np.degrees(theta2)
             print(theta2)
-            theta3 = theta1 - theta2
+            theta3 = - theta1 - theta2
             print(theta3)
             dist = np.sqrt(x1**2 + y1**2)
-            print(f'angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
+            print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
             tourner(-theta1)
             aller(dist)
             tourner(-theta3)
