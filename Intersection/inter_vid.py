@@ -1,21 +1,21 @@
 import cv2 
 import numpy as np
 import time
-import buildhat 
-from buildhat import Motor
-
-motor_left = Motor('A')
-motor_right = Motor('B')
-
-def tourner(degrés):
-    degres = degrés / 0.56
-    motor_left.run_for_degrees(degres, 10, False)
-    motor_right.run_for_degrees(degres, 10, False)
-
-def aller(distance):
-    dist = distance/0.075
-    motor_left.run_for_degrees(dist, 10, False)
-    motor_right.run_for_degrees(-dist, 10, False)
+# import buildhat 
+# from buildhat import Motor
+# 
+# motor_left = Motor('A')
+# motor_right = Motor('B')
+# 
+# def tourner(degrés):
+#     degres = degrés / 0.56
+#     motor_left.run_for_degrees(degres, 10, False)
+#     motor_right.run_for_degrees(degres, 10, False)
+# 
+# def aller(distance):
+#     dist = distance/0.075
+#     motor_left.run_for_degrees(dist, 10, False)
+#     motor_right.run_for_degrees(-dist, 10, False)
     
 def detectligne(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -53,7 +53,7 @@ def intersection(frame):
     return  cdstP  
 
 if __name__ == '__main__':
-    filename = ['02-16-2026_15-12-43.mp4', '02-20-2026_12-26-47.mp4'][0]
+    filename = ['02-16-2026_15-12-43.mp4', '02-20-2026_12-26-47.mp4'][1]
     video = cv2.VideoCapture(filename)
     if (video.isOpened() == False):
         print("Error opening the video file")
