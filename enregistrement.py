@@ -7,27 +7,9 @@ from buildhat import Motor
 from picamera2 import Picamera2
 import curses
 from curses import wrapper
+import camera
+from deplacements_robot import tout_droit, gauche, droite, stop
 
-motor_right = Motor('A')
-motor_left = Motor('B')
-speed = 10
-size = (640,480)
-
-def tout_droit(speed):
-    motor_right.start(speed)
-    motor_left.start(-speed)
-
-def gauche(speed):
-    motor_right.start(speed)
-    motor_left.start(speed)
-    
-def droite(speed):
-    motor_right.start(-speed)
-    motor_left.start(-speed)
-    
-def stop():
-    motor_right.stop()
-    motor_left.stop()
 
 # Fonction pour le thread d'enregistrement
 def recording_thread(q, nom, fps=15):
@@ -46,65 +28,55 @@ def recording_thread(q, nom, fps=15):
         writer.write(frame)
     writer.release()
 
-# Setup caméra Arducam (ajustez l'index si nécessaire)
-def init_pycam():
-    picam2 = Picamera2()
-    mode = picam2.sensor_modes[1]
-    config = picam2.create_still_configuration(
-        sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']},
-        main={"size": size }, # scale down the image, but maintain the full field of view
-        buffer_count=2,
-        #controls={'FrameRate': 50},
-    )
-    picam2.configure(config)#"preview")
-    picam2.start()
-    return picam2
+if __name__ == "__main__":
+    speed = 10
+    size = (640,480)
 
-# Queue pour passer les frames à enregistrer
-frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
+    # Queue pour passer les frames à enregistrer
+    frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
 
-# Lance le thread d'enregistrement
-rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, 'test.mp4'))
-rec_thread.start()
+    # Lance le thread d'enregistrement
+    rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, 'test.mp4'))
+    rec_thread.start()
 
-# Boucle principale : Capture, traitement, contrôle moteurs
-picam2 = init_pycam()
+    # Boucle principale : Capture, traitement, contrôle moteurs
+    picam2 = init_pycam()
 
 
-def main(stdscr): # wrap the main program to get a clean terminal at exit
+    def main(stdscr): # wrap the main program to get a clean terminal at exit
 
-    curses.noecho()
-    curses.cbreak()
-    stdscr.keypad(True)
-    stdscr.nodelay(True)
-    while True:
+        curses.noecho()
+        curses.cbreak()
+        stdscr.keypad(True)
+        stdscr.nodelay(True)
+        while True:
 
-        frame = picam2.capture_array()
-        # Passe une copie du frame à la queue pour enregistrement (sans bloquer)
-        if not frame_queue.full():
-            frame_queue.put(frame.copy())  # Copie pour éviter modification partagée
+            frame = picam2.capture_array()
+            # Passe une copie du frame à la queue pour enregistrement (sans bloquer)
+            if not frame_queue.full():
+                frame_queue.put(frame.copy())  # Copie pour éviter modification partagée
 
-        key = stdscr.getch()
-        if key == curses.KEY_UP :
-            print('En avant')
-            tout_droit(speed)
-        if key == curses.KEY_LEFT:
-            print('à gauche')
-            gauche(speed)
-        if key == curses.KEY_RIGHT:
-            print('à droite')
-            droite(speed)
-        if key == curses.KEY_DOWN :
-            print('STOP')
-            stop()
-            break
+            key = stdscr.getch()
+            if key == curses.KEY_UP :
+                print('En avant')
+                tout_droit(speed)
+            if key == curses.KEY_LEFT:
+                print('à gauche')
+                gauche(speed)
+            if key == curses.KEY_RIGHT:
+                print('à droite')
+                droite(speed)
+            if key == curses.KEY_DOWN :
+                print('STOP')
+                stop()
+                break
 
-    curses.nocbreak()
-    stdscr.keypad(False)
-    curses.echo()
-    curses.endwin()
-    frame_queue.put(None)
-    rec_thread.join()
-    cv2.destroyAllWindows()
+        curses.nocbreak()
+        stdscr.keypad(False)
+        curses.echo()
+        curses.endwin()
+        frame_queue.put(None)
+        rec_thread.join()
+        cv2.destroyAllWindows()
 
-wrapper(main)
+    wrapper(main)

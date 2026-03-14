@@ -21,3 +21,13 @@ def stop():
 def avancer(vitesse):
     motor_right.start(vitesse)
     motor_left.start(-vitesse)
+    
+def tourner(degres):
+    degres = degres / 0.56
+    motor_left.run_for_degrees(degres, 10, False)
+    motor_right.run_for_degrees(degres, 10, False)
+
+def aller(distance):
+    dist = distance/0.075
+    motor_left.run_for_degrees(-dist, 10, False)
+    motor_right.run_for_degrees(dist, 10, False)
