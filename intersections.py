@@ -66,7 +66,7 @@ def intersection(frame, draw=True):
     mask = detectligne(frame)
     dst = cv2.Canny(mask, 85, 90, apertureSize=3)
     cdstP = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-    linesP = cv2.HoughLinesP(dst, 1, np.pi / 180, 10, None, 50, 10)
+    linesP = cv2.HoughLinesP(dst, rho=1, theta=np.pi / 180, threshold=40, minLineLength=60, maxLineGap=20)
     if draw:
         if linesP is not None:
             print(len(linesP))
@@ -78,83 +78,98 @@ def intersection(frame, draw=True):
 def segment2rtheta(xa, ya, xb, yb):
     """prend les coords x, y de deux points et renvoie le rayon et l'angle de la droite"""
     #tan_theta = (xb - xa)/(ya - yb)
-    theta = np.arctan2(xa - xb, yb - ya)#tan_theta)
+    theta = np.arctan((xa - xb) / (yb - ya))#tan_theta)
     r = (xa+xb) * np.cos(theta)+ (ya+yb) * np.sin(theta)
     r = r/2
     return r, theta
 
-def groupir(lines):
+def groupir(lines, ngroups=2):
     """ Prend une liste de lines (r, theta) et ne conserve que les lignes principales (2 ou 4).
     Fais la moyenne des lignes par paire. (moyenne de theta, et r)
     """
-    lines_rt = []
+    lines_rs = []
     thetas = []
     for l in lines:
         r, theta = segment2rtheta(l[0][0], l[0][1], l[0][2], l[0][3])
-        lines_rt.append((r, theta))
+        lines_rs.append(r)
         thetas.append(theta)
-    thetast = np.array(thetas)
+    thetast = np.float32(np.array(thetas))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
     flags = cv2.KMEANS_RANDOM_CENTERS
-    compactness,groups,thetacenters = cv2.kmeans(thetast,5,None,criteria,10,flags)
-    cpt = np.zeros((5))
-    for i in range(5):
-        cpt[i] = (groups == i).sum()
-    sort_index = np.argsort(cpt)
-    centre1 = thetacenters[sort_index[-1]]
-    centre2 = thetacenters[sort_index[-2]]
-    # définir un seuil au dessus duquel on ne prend pas la ligne
-    return lines
+    compactness,groups,thetacenters = cv2.kmeans(thetast,ngroups,None,criteria,10,flags)
+    cpt = np.zeros((ngroups))
+    thetar = list(zip(thetas, lines_rs))
+    r1 = []
+    r2 = []
+    for i in range(len(thetar)):
+        if groups[i]==0:
+            r1.append(thetar[i])
+        else:
+            r2.append(thetar[i])
+    ls1 = np.array(r1)
+    ls2 = np.array(r2)
+    rcenters = (np.mean(ls1[:,1]),np.mean(ls2[:,1]))
+#     for i in range(ngroups):
+#         cpt[i] = (groups == i).sum()
+#     sort_index = np.argsort(cpt)
+#     centre1 = thetacenters[sort_index[-1]]
+#     centre2 = thetacenters[sort_index[-2]]
+    # définir un seuil au dessous duquel on ne prend pas la ligne
+    return thetacenters, groups, lines_rs, thetas, thetar, r1, r2, rcenters
 
-if __name__ == "__main__":
+def centers2lines(thetacenters, rcenters):
+    a = np.cos(thetacenters[0][0])
+    b = np.sin(thetacenters[0][0])
+    x = a * rcenters[0]
+    y = b * rcenters[0]
+    pt1 = (int(x + 1000 * (-b)), int(y + 1000*(a)))
+    pt2 = (int(x - 1000*(-b)), int(y - 1000*(a)))
+    a2 = np.cos(thetacenters[1][0])
+    b2 = np.sin(thetacenters[1][0])
+    x2 = a2 * rcenters[1]
+    y2 = b2 * rcenters[1]
+    pt3 = (int(x2 + 1000 * (-b2)), int(y2 + 1000*(a2)))
+    pt4 = (int(x2 - 1000*(-b2)), int(y2 - 1000*(a2)))
+    return pt1, pt2, pt3, pt4
+
+if 0:#__name__ == "__main__":
          
     filename = 'Intersection/intersection1.jpg'
     frame = cv2.imread(filename)#, cv2.IMREAD_GRAYSCALE)
-    cdstP, linesP = intersection(frame)#, draw=True)
-    lines_rt = []
-    thetas = []
-    for l in linesP:
-        r, theta = segment2rtheta(l[0][0], l[0][1], l[0][2], l[0][3])
-        lines_rt.append((r, theta))
-        thetas.append(theta)
-        
-        
-    # Define criteria = ( type, max_iter = 10 , epsilon = 1.0 )
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
-    # Set flags (Just to avoid line break in the code)
-    flags = cv2.KMEANS_RANDOM_CENTERS
- 
-    # Apply KMeans
-    compactness,labels,centers = cv2.kmeans(np.array(thetas),2,None,criteria,10,flags)
-    import matplotlib.pyplot as plt
-    fig,ax = plt.subplots(1,1)
-    ax.plot(thetas, 'ko')
-#    cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
-#    key = cv2.waitKey(20)
-#        #time.sleep(0.1)
-#    if key == ord('q'):
-#        cv2.destroyAllWindows()
-if 0:#__name__ == '__main__':
+    cdstP, linesP = intersection(frame, draw=True)
+    centre1, centre2 = groupir(linesP)
+    print(centre1, centre2)
+    cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
+    key = cv2.waitKey(20)
+       #time.sleep(0.1)
+    if key == ord('q'):
+        cv2.destroyAllWindows()
+if __name__ == '__main__':
     filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4'][1]
     video = cv2.VideoCapture(filename)
     if (video.isOpened() == False):
         print("Error opening the video file")
     timing = []
     ret, exemple = video.read()
+    compteur = 0
     while(video.isOpened()):
         ret, frame = video.read()
+        compteur = compteur + 1
         timing.append(time.time())
+        print(f"Frame : {compteur}")
         if ret == True:
-            cdstP, linesP = intersection(frame, draw=True)
-            linesP = groupir(linesP)
+            imgline, linesP = intersection(frame, draw=True)
+            thetacenters, groups, lines_rs, thetas, thetar, r1, r2, rcenters = groupir(linesP)
             # les dessiner sur cdst
             
             #mask = detectligne(frame)
-            cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
+            cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", imgline)
             #cv2.imshow("Masque", mask)
             #cv2.imshow("Masque", visio(mask, frame))
             key = cv2.waitKey(20)
             #time.sleep(0.1)
+            if compteur == 30:
+                break
             if key == ord('q'):
                 break
             if key == ord("p"):
@@ -166,4 +181,22 @@ if 0:#__name__ == '__main__':
     print(f'fps = {moy * 1000:.1f} ms')
     video.release()
     cv2.destroyAllWindows() 
-
+    import matplotlib.pyplot as plt
+    plt.ion()
+    fig = plt.figure()
+    axe1, axe2 = fig.subplots(1, 2)
+    axe1.imshow(frame)
+    axe2.imshow(imgline)
+    axe2.set_title(f"{len(linesP)} lignes détectées")
+    fig2 = plt.figure("distribution r et theta")
+    axe1, axe2 = fig2.subplots(1, 2)
+    axe1.hist(lines_rs)
+    axe2.hist(thetas)
+    for center in thetacenters:
+        plt.axvline(center, color="red")
+    pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters)
+    cv2.line(frame, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+    cv2.line(frame, pt3, pt4, (0,0,255), 3, cv2.LINE_AA)
+    fig = plt.figure()
+    axe1 = fig.subplots(1, 1)
+    axe1.imshow(frame)
