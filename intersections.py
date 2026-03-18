@@ -4,15 +4,19 @@ import cv2
 import numpy as np
 import time
 
-def centre_inter(theta1, r1, theta2, r2):
+def centre_inter(tabtheta, lsr):
     ''' prend les r et theta des deux droites détectées et calcule
     leur intersection '''
+    theta1 = tabtheta[0][0]
+    theta2 = tabtheta[1][0]
+    r1 = lsr[0]
+    r2 = lsr[1]
     cos1 = np.cos(theta1)
     cos2 = np.cos(theta2)
     sin1 = np.sin(theta1)
     sin2 = np.sin(theta2)
     y = (r2 * cos1 - cos2 * r1) / (sin2 * cos1 - cos2 * sin1)
-    x = (r1 - sin2 * y) / cos1
+    x = (r1 - sin1 * y) / cos1
     return x, y
 
 def get_barycentre(frame, irow, seuil=50):
@@ -161,7 +165,7 @@ if __name__ == '__main__':
             imgline, linesP = intersection(frame, draw=True)
             thetacenters, groups, lines_rs, thetas, thetar, r1, r2, rcenters = groupir(linesP)
             # les dessiner sur cdst
-            
+            x, y = centre_inter(thetacenters, rcenters)
             #mask = detectligne(frame)
             cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", imgline)
             #cv2.imshow("Masque", mask)
@@ -188,15 +192,16 @@ if __name__ == '__main__':
     axe1.imshow(frame)
     axe2.imshow(imgline)
     axe2.set_title(f"{len(linesP)} lignes détectées")
-    fig2 = plt.figure("distribution r et theta")
-    axe1, axe2 = fig2.subplots(1, 2)
-    axe1.hist(lines_rs)
-    axe2.hist(thetas)
-    for center in thetacenters:
-        plt.axvline(center, color="red")
+    #fig2 = plt.figure("distribution r et theta")
+    #axe1, axe2 = fig2.subplots(1, 2)
+    #axe1.hist(lines_rs)
+    #axe2.hist(thetas)
+    #for center in thetacenters:
+    #    plt.axvline(center, color="red")
     pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters)
     cv2.line(frame, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
     cv2.line(frame, pt3, pt4, (0,0,255), 3, cv2.LINE_AA)
+    cv2.circle(frame, (int(x), int(y)), 30, (255,0,0), -1)
     fig = plt.figure()
     axe1 = fig.subplots(1, 1)
     axe1.imshow(frame)
