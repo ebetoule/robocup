@@ -73,7 +73,7 @@ def intersection(frame, draw=True):
     linesP = cv2.HoughLinesP(dst, rho=1, theta=np.pi / 180, threshold=40, minLineLength=60, maxLineGap=20)
     if draw:
         if linesP is not None:
-            print(len(linesP))
+            #print(len(linesP))
             for i in range(0, len(linesP)):
                 l = linesP[i][0]
                 cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
@@ -98,43 +98,61 @@ def groupir(lines, ngroups=2):
         lines_rs.append(r)
         thetas.append(theta)
     thetast = np.float32(np.array(thetas))
+    tabr = np.float32(np.array(lines_rs))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
     flags = cv2.KMEANS_RANDOM_CENTERS
-    compactness,groups,thetacenters = cv2.kmeans(thetast,ngroups,None,criteria,10,flags)
-    cpt = np.zeros((ngroups))
     thetar = list(zip(thetas, lines_rs))
-    r1 = []
-    r2 = []
-    for i in range(len(thetar)):
-        if groups[i]==0:
-            r1.append(thetar[i])
-        else:
-            r2.append(thetar[i])
-    ls1 = np.array(r1)
-    ls2 = np.array(r2)
-    rcenters = (np.mean(ls1[:,1]),np.mean(ls2[:,1]))
-#     for i in range(ngroups):
-#         cpt[i] = (groups == i).sum()
-#     sort_index = np.argsort(cpt)
-#     centre1 = thetacenters[sort_index[-1]]
-#     centre2 = thetacenters[sort_index[-2]]
-    # définir un seuil au dessous duquel on ne prend pas la ligne
-    return thetacenters, groups, lines_rs, thetas, thetar, r1, r2, rcenters
+    try:
+        compactness,groups,thetacenters = cv2.kmeans(thetast,ngroups,None,criteria,10,flags)
+    except:
+        compactness,groups,thetacenters = cv2.kmeans(thetast,1,None,criteria,10,flags)
+    thetacenters, rcenters, theta3, nbline = deuxun(groups, thetacenters, tabr, thetar, thetast)
+    return thetacenters, rcenters, theta3, nbline
 
-def centers2lines(thetacenters, rcenters):
+def deuxun(groups, thetacenters, tabr, thetar, thetast):
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
+    flags = cv2.KMEANS_RANDOM_CENTERS
+    if len(groups) == 1:
+        compactness,groups,rcenters = cv2.kmeans(tabr,1,None,criteria,10,flags)
+        return thetacenters, rcenters, 0, 1
+    else:
+        cpt = np.zeros((2))
+        r1 = []
+        r2 = []
+        for i in range(len(thetar)):
+            if groups[i]==0:
+                r1.append(thetar[i])
+            else:
+                r2.append(thetar[i])
+        ls1 = np.array(r1)
+        ls2 = np.array(r2)
+        rcenters = (np.mean(ls1[:,1]),np.mean(ls2[:,1]))
+        theta3 = np.degrees(thetacenters[1][0] - thetacenters[0][0])
+        if abs(abs(theta3) - 90) > 10:
+            compactness,groups,thetacenters = cv2.kmeans(thetast,1,None,criteria,10,flags)
+            compactness,groups,rcenters = cv2.kmeans(tabr,1,None,criteria,10,flags)
+            return thetacenters, rcenters, 0, 1
+        else:
+            return thetacenters, rcenters, theta3, 2
+        
+
+def centers2lines(thetacenters, rcenters, nbline):
     a = np.cos(thetacenters[0][0])
     b = np.sin(thetacenters[0][0])
     x = a * rcenters[0]
     y = b * rcenters[0]
     pt1 = (int(x + 1000 * (-b)), int(y + 1000*(a)))
     pt2 = (int(x - 1000*(-b)), int(y - 1000*(a)))
-    a2 = np.cos(thetacenters[1][0])
-    b2 = np.sin(thetacenters[1][0])
-    x2 = a2 * rcenters[1]
-    y2 = b2 * rcenters[1]
-    pt3 = (int(x2 + 1000 * (-b2)), int(y2 + 1000*(a2)))
-    pt4 = (int(x2 - 1000*(-b2)), int(y2 - 1000*(a2)))
-    return pt1, pt2, pt3, pt4
+    if nbline == 2:
+        a2 = np.cos(thetacenters[1][0])
+        b2 = np.sin(thetacenters[1][0])
+        x2 = a2 * rcenters[1]
+        y2 = b2 * rcenters[1]
+        pt3 = (int(x2 + 1000 * (-b2)), int(y2 + 1000*(a2)))
+        pt4 = (int(x2 - 1000*(-b2)), int(y2 - 1000*(a2)))
+        return pt1, pt2, pt3, pt4
+    else:
+        return pt1, pt2, 0, 0
 
 if 0:#__name__ == "__main__":
          
@@ -160,13 +178,22 @@ if __name__ == '__main__':
         ret, frame = video.read()
         compteur = compteur + 1
         timing.append(time.time())
-        print(f"Frame : {compteur}")
+        #print(f"Frame : {compteur}")
         if ret == True:
             imgline, linesP = intersection(frame, draw=True)
-            thetacenters, groups, lines_rs, thetas, thetar, r1, r2, rcenters = groupir(linesP)
+            thetacenters, rcenters, theta3, nblignes = groupir(linesP)
+            print(theta3)
             # les dessiner sur cdst
-            x, y = centre_inter(thetacenters, rcenters)
+            if nblignes == 2:
+                x, y = centre_inter(thetacenters, rcenters)
             #mask = detectligne(frame)
+                pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
+                cv2.line(imgline, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
+                cv2.line(imgline, pt3, pt4, (0,255,255), 3, cv2.LINE_AA)
+                cv2.circle(imgline, (int(x), int(y)), 30, (255,0,0), -1)
+            else :
+                pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
+                cv2.line(imgline, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
             cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", imgline)
             #cv2.imshow("Masque", mask)
             #cv2.imshow("Masque", visio(mask, frame))
@@ -178,6 +205,7 @@ if __name__ == '__main__':
                 break
             if key == ord("p"):
                 time.sleep(1)
+            time.sleep(1)
         else:
           break
  
@@ -198,10 +226,10 @@ if __name__ == '__main__':
     #axe2.hist(thetas)
     #for center in thetacenters:
     #    plt.axvline(center, color="red")
-    pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters)
-    cv2.line(frame, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
-    cv2.line(frame, pt3, pt4, (0,0,255), 3, cv2.LINE_AA)
-    cv2.circle(frame, (int(x), int(y)), 30, (255,0,0), -1)
-    fig = plt.figure()
-    axe1 = fig.subplots(1, 1)
-    axe1.imshow(frame)
+    #pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters)
+#     cv2.line(frame, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+#     cv2.line(frame, pt3, pt4, (0,0,255), 3, cv2.LINE_AA)
+    #cv2.circle(frame, (int(x), int(y)), 30, (255,0,0), -1)
+#     fig = plt.figure()
+#     axe1 = fig.subplots(1, 1)
+#     axe1.imshow(frame)

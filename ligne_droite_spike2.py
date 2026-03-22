@@ -8,7 +8,7 @@ import threading
 import queue
 from datetime import datetime
 import camera
-import intersections import get_barycentre, 
+from intersections import get_barycentre, centre_inter, detectligne, intersection, segment2rtheta, groupir, deuxun, centers2lines
 from deplacements_robot import tout_droit, gauche, droite, stop, tourner, aller
 import click_and_go as cg
 from enregistrement import recording_thread
@@ -64,6 +64,7 @@ def suivi(difference, barycentre, dernier, avant):
 picam2 = init_pycam()
 last = 0
 lecture = False
+inter = True
 index = 0
 frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
 #rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename))
@@ -80,7 +81,19 @@ try:
             trajectoire[index] = barycentre
         difference = (centre - barycentre)
         barint = int(barycentre) if np.isfinite(barycentre) else -1
-        if lecture:
+        if inter:
+            frame = detectligne(frame)
+            cdstP, linesP = intersection(frame, False)
+            thetacenters, rcenters, theta3, nblignes = groupir(linesP)
+            if nblignes == 2:
+                x1, y1 = center_inter(thetacenters, rcenters)
+                theta1 = np.arctan2(x1, y1)
+                theta1 = np.degrees(theta1)
+                dist = np.sqrt(x1**2 + y1**2)
+                tourner(-theta1)
+                aller(dist)
+                tourner(90)
+        elif lecture:
             cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
             cv2.imshow('frame', frame)
             key = cv2.waitKey(20)
