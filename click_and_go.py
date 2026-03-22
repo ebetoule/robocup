@@ -1,9 +1,10 @@
 import cv2
 import camera
 import numpy as np
-from buildhat import Motor
-motor_right = Motor('A')
-motor_left = Motor('B')
+from deplacements_robot import avancer, gauche, droit, stop, tourner, aller
+# from buildhat import Motor
+# motor_right = Motor('A')
+# motor_left = Motor('B')
 
 objpoints = np.array([
     [-4, 13],
@@ -20,15 +21,6 @@ imgpoints = np.array([
 
 #cv2.imread('tutoriel/chess/ccn11.jpg')
 M = cv2.getPerspectiveTransform(imgpoints,objpoints)
-def tourner(degres):
-    degres = degres / 0.56
-    motor_left.run_for_degrees(degres, 10, False)
-    motor_right.run_for_degrees(degres, 10, False)
-    
-def aller(distance):
-    dist = distance/0.075
-    motor_left.run_for_degrees(-dist, 10, False)
-    motor_right.run_for_degrees(dist, 10, False)
 
 nbfois = 1
 x1 = None

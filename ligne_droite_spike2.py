@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import time
-from buildhat import Motor
+#from buildhat import Motor
 from picamera2 import Picamera2
 from pprint import *
 import threading
@@ -9,8 +9,8 @@ import queue
 from datetime import datetime
 import camera
 from intersections import get_barycentre, centre_inter, detectligne, intersection, segment2rtheta, groupir, deuxun, centers2lines
-from deplacements_robot import tout_droit, gauche, droite, stop, tourner, aller
-import click_and_go as cg
+from deplacements_robot import avancer, gauche, droit, stop, tourner, aller
+#import click_and_go as cg
 from enregistrement import recording_thread
 
 
@@ -21,8 +21,8 @@ size = (640,480)
 #size = (480, 270)
 vitesse = 20
 irow = -5
-motor_right = Motor('A')
-motor_left = Motor('B')
+#motor_right = Motor('A')
+#motor_left = Motor('B')
 trajectoire = np.zeros((100))
 fps = 15
 
@@ -61,7 +61,7 @@ def suivi(difference, barycentre, dernier, avant):
         gauche(vitesse)
         droit(2 * vitesse / np.abs(difference))
 
-picam2 = init_pycam()
+picam2 = camera.init_pycam()
 last = 0
 lecture = False
 inter = True

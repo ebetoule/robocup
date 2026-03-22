@@ -8,7 +8,7 @@ from picamera2 import Picamera2
 import curses
 from curses import wrapper
 import camera
-from deplacements_robot import tout_droit, gauche, droite, stop
+from deplacements_robot import avancer, gauche, droit, stop
 
 
 # Fonction pour le thread d'enregistrement
