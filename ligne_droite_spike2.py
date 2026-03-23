@@ -61,56 +61,58 @@ def suivi(difference, barycentre, dernier, avant):
         gauche(vitesse)
         droit(2 * vitesse / np.abs(difference))
 
-picam2 = camera.init_pycam()
-last = 0
-lecture = False
-inter = True
-index = 0
-frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
-#rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename))
-#rec_thread.start()
-frame = picam2.capture_array()
-try:
-    while 1:
-        frame = picam2.capture_array()
-        dim_y, dim_x, _ = frame.shape
-        centre = dim_x // 2
-        barycentre = get_barycentre(frame, irow)
-        if np.isfinite(barycentre):
-            index = (index+1)%100
-            trajectoire[index] = barycentre
-        difference = (centre - barycentre)
-        barint = int(barycentre) if np.isfinite(barycentre) else -1
-        if inter:
-            frame = detectligne(frame)
+if __name__ == '__main__':
+    picam2 = camera.init_pycam()
+    last = 0
+    running = True
+    lecture = False
+    write = False
+    index = 0
+    if write:
+        frame_queue = queue.Queue(maxsize=10)  # Limite pour éviter surcharge
+        rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename))
+        rec_thread.start()
+    frame = picam2.capture_array()
+    try:
+        while running:
+            frame = picam2.capture_array()
+            dim_y, dim_x, _ = frame.shape
+            centre = dim_x // 2
+            barycentre = get_barycentre(frame, irow)
+            if np.isfinite(barycentre):
+                index = (index+1)%100
+                trajectoire[index] = barycentre
+            difference = (centre - barycentre)
+            barint = int(barycentre) if np.isfinite(barycentre) else -1
             cdstP, linesP = intersection(frame, False)
             thetacenters, rcenters, theta3, nblignes = groupir(linesP)
             if nblignes == 2:
-                x1, y1 = center_inter(thetacenters, rcenters)
+                print("intersection trouvée !!!")
+                x1, y1 = centre_inter(thetacenters, rcenters)
                 theta1 = np.arctan2(x1, y1)
                 theta1 = np.degrees(theta1)
                 dist = np.sqrt(x1**2 + y1**2)
                 tourner(-theta1)
                 aller(dist)
                 tourner(90)
-        elif lecture:
-            cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
-            cv2.imshow('frame', frame)
-            key = cv2.waitKey(20)
-            if key == ord('q'):
-                stop()
-                break
-        else:
-            suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
-        if not frame_queue.full():
-            frame_queue.put(frame.copy())
+            #suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
+            if lecture:
+                cv2.circle(frame, (barint, dim_y+irow), 20, (0, 0, 255), -1) 
+                cv2.imshow('frame', frame)
+                key = cv2.waitKey(20)
+                if key == ord('q'):
+                    stop()
+                    break
+            if write and not frame_queue.full():
+                frame_queue.put(frame.copy())
 
-except KeyboardInterrupt:
-    #stop()
-    #frame_queue.put(None)
+    except KeyboardInterrupt:
+        #stop()
+        #frame_queue.put(None)
+        #rec_thread.join()
+        running = False
+    if write:
+        frame_queue.put(None)
     #rec_thread.join()
-    pass
-frame_queue.put(None)
-#rec_thread.join()
-cv2.destroyAllWindows()
-stop()
+    cv2.destroyAllWindows()
+    stop()
