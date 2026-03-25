@@ -24,10 +24,10 @@ def avancer(vitesse):
     
 def tourner(degres):
     degres = degres / 0.56
-    motor_left.run_for_degrees(degres, 10, False)
-    motor_right.run_for_degrees(degres, 10, False)
+    motor_left.run_for_degrees(degres, 10, True)
+    motor_right.run_for_degrees(degres, 10, True)
 
 def aller(distance):
     dist = distance/0.075
-    motor_left.run_for_degrees(-dist, 10, False)
-    motor_right.run_for_degrees(dist, 10, False)
+    motor_left.run_for_degrees(-dist, 10, True)
+    motor_right.run_for_degrees(dist, 10, True)
