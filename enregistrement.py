@@ -7,12 +7,12 @@ from buildhat import Motor
 from picamera2 import Picamera2
 import curses
 from curses import wrapper
-import camera
+from camera import init_pycam, size
 from deplacements_robot import avancer, gauche, droit, stop
 
 
 # Fonction pour le thread d'enregistrement
-def recording_thread(q, nom, fps=15):
+def recording_thread(q, nom, fps=15, size=size):
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec efficace
     writer = cv2.VideoWriter(nom, fourcc, fps, size)#(width, height))
     print("debut de l'enregistrement")

@@ -167,7 +167,7 @@ if 0:#__name__ == "__main__":
     if key == ord('q'):
         cv2.destroyAllWindows()
 if __name__ == '__main__':
-    filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4'][1]
+    filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4', '03-26-2026_17-05-23.mp4'][2]
     video = cv2.VideoCapture(filename)
     if (video.isOpened() == False):
         print("Error opening the video file")
@@ -198,7 +198,7 @@ if __name__ == '__main__':
             #cv2.imshow("Masque", mask)
             #cv2.imshow("Masque", visio(mask, frame))
             key = cv2.waitKey(20)
-            #time.sleep(0.1)
+            time.sleep(0.1)
             if compteur == 30:
                 break
             if key == ord('q'):
