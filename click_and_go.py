@@ -2,22 +2,27 @@ import cv2
 import camera
 import numpy as np
 from deplacements_robot import avancer, gauche, droit, stop, tourner, aller
+from calibration import objpoints
 # from buildhat import Motor
 # motor_right = Motor('A')
 # motor_left = Motor('B')
+imgpoints = np.array([[ 29., 452.],
+       [588., 443.],
+       [ 83.,  15.],
+       [536.,   8.]], dtype=np.float32)
 
-objpoints = np.array([
-    [-4, 13],
-    [2, 13],
-    [-6, 28.],
-    [6,28],
-    ], dtype="float32")
-imgpoints = np.array([
-    [16, 334],
-    [500, 335],
-    [129., 24],
-    [523, 27],
-    ], dtype="float32")
+# objpoints = np.array([
+#     [-4, 13],
+#     [2, 13],
+#     [-6, 28.],
+#     [6,28],
+#     ], dtype="float32")
+# imgpoints = np.array([
+#     [16, 334],
+#     [500, 335],
+#     [129., 24],
+#     [523, 27],
+#     ], dtype="float32")
 
 #cv2.imread('tutoriel/chess/ccn11.jpg')
 M = cv2.getPerspectiveTransform(imgpoints,objpoints)

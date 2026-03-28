@@ -75,7 +75,7 @@ def passage_inter(thetacenters, rcenters, x1, y1):
     print(f'avancer de {dist}')
     aller(dist)
     print('tourner de 90')
-    tourner(90)
+    tourner(-90)
     print('fini!!!')
 
 def normal(frame):
@@ -99,10 +99,10 @@ def normal(frame):
             pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, 2)
             cv2.line(imgline, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
             cv2.line(imgline, pt3, pt4, (0,255,255), 3, cv2.LINE_AA)
-            #passage_inter(thetacenters, rcenters, x1, y1)
+            passage_inter(thetacenters, rcenters, x1, y1)
             return 'intersection', imgline
         else:
-            #suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
+            suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
             if barint != -1:
                 pt1, pt2, _, _ = centers2lines(thetacenters, rcenters, 1)
                 cv2.line(imgline, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)

@@ -13,6 +13,13 @@ imgpoints = np.array([
     [0, 0],
     ], dtype="float32")
 
+
+objpoints = np.array([
+    [-3, 11],
+    [3, 11],
+    [-7, 25.],
+    [7,25],
+    ], dtype="float32")
 compteur = 0
 
 def click(action, x, y, flags, userdata):
@@ -21,12 +28,6 @@ def click(action, x, y, flags, userdata):
     -avec le bouton droit, le coin en bas à droite
     -avec la touche controle, le coin en haut à gauche
     -avec la touche tab, le coin en haut à droite"""
-    objpoints = np.array([
-    [-4, 13],
-    [2, 13],
-    [-6, 28.],
-    [6,28],
-    ], dtype="float32")
     global imgpoints
     global compteur
     if action == cv2.EVENT_LBUTTONDBLCLK:
@@ -36,6 +37,7 @@ def click(action, x, y, flags, userdata):
         print(f"ok pour le nummero {compteur}")
     if compteur == 4:
         print("ok pour le quatrième")
+        print(imgpoints)
         M = cv2.getPerspectiveTransform(imgpoints,objpoints)
         print(M)
     
