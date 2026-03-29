@@ -65,17 +65,18 @@ def groupir(lines, ngroups=2):
     return thetacenters, rcenters, theta3, nbline, thetast, tabr
 
 
-def drawdroites(theta, r, img):
-    pt1, pt2 = lines2segments(theta, r)
-    cv2.line(img, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
+def drawdroites(thetas, rs, img):
+    for theta, r in zip(thetas, rs):
+        pt1, pt2 = lines2segments(theta, r)
+        cv2.line(img, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
     #cv2.circle(img, (int(x), int(y)), 30, (255,0,0), -1)
     return img
     
 def lines2segments(theta, r):
-    a = np.cos(theta[0][0])
-    b = np.sin(theta[0][0])
-    x = a * r[0]
-    y = b * r[0]
+    a = np.cos(theta)
+    b = np.sin(theta)
+    x = a * r
+    y = b * r
     pt1 = (int(x + 1000 * (-b)), int(y + 1000*(a)))
     pt2 = (int(x - 1000*(-b)), int(y - 1000*(a)))
     return pt1, pt2
@@ -122,16 +123,28 @@ def groupir2(lines, img, ngroups=2):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
     flags = cv2.KMEANS_RANDOM_CENTERS
     thetar = list(zip(thetas, lines_rs))
-    compactness,groups,thetacenters = cv2.kmeans(np.array([x, y]).T,ngroups,None,criteria,10,flags)#kmeans veut absolument un tableau dans le bon sens
+    compactness,groups,groupcoord = cv2.kmeans(np.array([x, y]).T,ngroups,None,criteria,10,flags)#kmeans veut absolument un tableau dans le bon sens
+    xg = groupcoord[:,0]
+    yg = groupcoord[:,1]
+    deuxthetasgroup = np.arctan2(yg, xg)
+    thetagroup = deuxthetasgroup / 2
     colors = [(0, 0, 255), (255, 0, 0), (0, 255, 0)]
+    thetargroup = []
+    rgroup = []
     for i in range(ngroups):
-        danslegroupe = (groups.squeeze() == i)
+        danslegroupe = (groups.squeeze() == i)#squeeze enlève une dimension
+        thetargroup.append(np.array(thetar)[danslegroupe,:])
         img = drawsegments(lines[danslegroupe,:,:], img, color=colors[i])
+        #cas particulier des droites horyzontales
+        if np.abs(thetagroup[i]) > np.radians(85):  
+            rgroup.append(np.mean(np.sign(thetagroup[i]) * np.sign(thetargroup[i][:,0]) * thetargroup[i][:,1]))
+        else:
+            rgroup.append(np.mean(thetargroup[i][:,1]))
     #plt.scatter(x, y, c=groups)
     plt.scatter(lines_rs, thetas, c=groups)
     #plt.xlim(-1, 1)
     #plt.ylim(-1, 1)
-    return img
+    return img, thetagroup, rgroup
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -156,7 +169,8 @@ if __name__ == '__main__':
     
     #test de groupir2
     plt.figure('groups')
-    imgp = groupir2(lines, img, ngroups=2)
+    imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
     plt.figure('groupir2')
+    drawdroites(thetagroup, rgroup, imgp)
     plt.imshow(imgp)
     
