@@ -3,6 +3,7 @@ import math
 import cv2 
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 def centre_inter(tabtheta, lsr):
     ''' prend les r et theta des deux droites détectées et calcule
@@ -107,7 +108,31 @@ def groupir(lines, ngroups=2):
     except:
         compactness,groups,thetacenters = cv2.kmeans(thetast,1,None,criteria,10,flags)
     thetacenters, rcenters, theta3, nbline = deuxun(groups, thetacenters, tabr, thetar, thetast)
-    return thetacenters, rcenters, theta3, nbline
+    return thetacenters, rcenters, theta3, nbline, thetast, tabr
+
+def groupir2(lines, ngroups=2):
+    """ Prend une liste de lines (r, theta) et ne conserve que les lignes principales (2 ou 4).
+    Fais la moyenne des lignes par paire. (moyenne de theta, et r)
+    """
+    lines_rs = []
+    thetas = []
+    for l in lines:
+        r, theta = segment2rtheta(l[0][0], l[0][1], l[0][2], l[0][3])
+        lines_rs.append(r)
+        thetas.append(theta)
+    thetast = np.float32(np.array(thetas))
+    x = np.cos(2 * thetast)
+    y = np.sin(2 * thetast)
+    tabr = np.float32(np.array(lines_rs))
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
+    flags = cv2.KMEANS_RANDOM_CENTERS
+    thetar = list(zip(thetas, lines_rs))
+    try:
+        compactness,groups,thetacenters = cv2.kmeans([x, y],ngroups,None,criteria,10,flags)
+    except:
+        compactness,groups,thetacenters = cv2.kmeans(thetast,1,None,criteria,10,flags)
+    thetacenters, rcenters, theta3, nbline = deuxun(groups, thetacenters, tabr, thetar, thetast)
+    return thetacenters, rcenters, theta3, nbline, thetast, tabr
 
 def deuxun(groups, thetacenters, tabr, thetar, thetast):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
@@ -116,7 +141,6 @@ def deuxun(groups, thetacenters, tabr, thetar, thetast):
         compactness,groups,rcenters = cv2.kmeans(tabr,1,None,criteria,10,flags)
         return thetacenters, rcenters, 0, 1
     else:
-        cpt = np.zeros((2))
         r1 = []
         r2 = []
         for i in range(len(thetar)):
@@ -167,8 +191,9 @@ if 0:#__name__ == "__main__":
     if key == ord('q'):
         cv2.destroyAllWindows()
 if __name__ == '__main__':
-    filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4', '03-26-2026_17-05-23.mp4'][2]
-    video = cv2.VideoCapture(filename)
+    #input_dir = '/home/eloise/monpi/robocup/'
+    filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4', '03-28-2026_15-34-06.mp4'][2]
+    video = cv2.VideoCapture(filename)#(input_dir + filename)
     if (video.isOpened() == False):
         print("Error opening the video file")
     timing = []
@@ -176,14 +201,16 @@ if __name__ == '__main__':
     compteur = 0
     while(video.isOpened()):
         ret, frame = video.read()
+        frame = frame[:, 640:, :]
         compteur = compteur + 1
         timing.append(time.time())
         #print(f"Frame : {compteur}")
         if ret == True:
             imgline, linesP = intersection(frame, draw=True)
-            thetacenters, rcenters, theta3, nblignes = groupir(linesP)
+            thetacenters, rcenters, theta3, nblignes, thetast, tabr = groupir(linesP)
             print(theta3)
             # les dessiner sur cdst
+            plt.scatter(tabr, thetast)
             if nblignes == 2:
                 x, y = centre_inter(thetacenters, rcenters)
             #mask = detectligne(frame)
@@ -199,13 +226,13 @@ if __name__ == '__main__':
             #cv2.imshow("Masque", visio(mask, frame))
             key = cv2.waitKey(20)
             time.sleep(0.1)
-            if compteur == 30:
+            if compteur == 79:
                 break
             if key == ord('q'):
                 break
             if key == ord("p"):
                 time.sleep(1)
-            time.sleep(1)
+            #time.sleep(0.1)
         else:
           break
  
@@ -220,6 +247,7 @@ if __name__ == '__main__':
     axe1.imshow(frame)
     axe2.imshow(imgline)
     axe2.set_title(f"{len(linesP)} lignes détectées")
+    cv2.imwrite('test.jpg', frame)
     #fig2 = plt.figure("distribution r et theta")
     #axe1, axe2 = fig2.subplots(1, 2)
     #axe1.hist(lines_rs)
