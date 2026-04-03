@@ -14,6 +14,31 @@ def detectligne(frame):
     #mask = ((frame < 50).all(axis=2)*255).astype('uint8')
     return mask
 
+def detectvert(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    min_vert = np.array([40, 50, 50])#Teinte, saturation, value
+    max_vert = np.array([80, 255, 255])
+    mask = cv2.inRange(hsv, min_vert, max_vert)
+    return mask
+
+def detectcarre(frame):
+    mask = detectvert(frame)
+    contours,hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    #cv2.drawContours(mask, contours, -1, (0, 0, 255), 5)
+    carre = []
+    for data in contours:
+        try:
+            M = cv2.moments(data)
+            print(M)
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
+            carre.append([cx, cy])
+            cv2.circle(frame, (int(cx), int(cy)), 30, (255,0,0), -1)
+            print(f'ça marche normalement : {cx}, {cy}')
+        except:
+            pass
+    return contours, frame, carre
+
 def detectdroite(frame):
     """ Prend l'image traitée et applique la transformation de ouaf pour
     avoir une liste de lignes. Si on veut dessiner, on met draw = True"""
@@ -148,19 +173,30 @@ def groupir2(lines, img, ngroups=2):
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    plt.close('all')
-    img = cv2.imread('test.jpg')
+    #plt.close('all')
+    img = cv2.imread('test2.png')
     plt.ion()
-    plt.imshow(img)
+    #plt.imshow(img)
     
     # test de détectligne
     plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
     mask = detectligne(img)
     plt.imshow(mask)
     
+    #test de detect_vert:
+    plt.figure('vert')
+    mask2 = detectvert(img)
+    plt.imshow(mask2)
+    
+    contours, mask3, carre = detectcarre(img)
+    #print(contours)
+    #drawsegments(contours, img, color=(0,0,255))
+    plt.figure('contours')
+    plt.imshow(mask3)
     # test de detectdroite
-    imgl, lines = detectdroite(img)
-    plt.imshow(drawsegments(lines, imgl))
+#     plt.figure('detectdroite')
+#     imgl, lines = detectdroite(img)
+#     plt.imshow(drawsegments(lines, imgl))
     
     #test de groupir
 #     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
@@ -168,9 +204,9 @@ if __name__ == '__main__':
 #     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
     
     #test de groupir2
-    plt.figure('groups')
-    imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
-    plt.figure('groupir2')
-    drawdroites(thetagroup, rgroup, imgp)
-    plt.imshow(imgp)
+#     plt.figure('groups')
+#     imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
+#     plt.figure('groupir2')
+#     drawdroites(thetagroup, rgroup, imgp)
+#     plt.imshow(imgp)
     
