@@ -70,13 +70,18 @@ def passage_inter(thetacenters, rcenters, x1, y1):
     theta1 = np.arctan2(x, y)
     theta1 = np.degrees(theta1)
     dist = np.sqrt(x**2 + y**2)
-    print(f'tourner de {theta1}')
-    tourner(-theta1)
-    print(f'avancer de {dist}')
-    aller(dist)
-    print('tourner de 90')
-    tourner(-90)
-    print('fini!!!')
+    if dist < 20:
+        print(f'tourner de {theta1}')
+        tourner(-theta1)
+        print(f'avancer de {dist}')
+        aller(dist)
+        print('tourner de 90')
+        tourner(-90)
+        print('fini!!!')
+        return 'normal'
+    else :
+        return 'normal'
+        
 
 def normal(frame):
     global index, trajectoire
@@ -91,7 +96,7 @@ def normal(frame):
     barint = int(barycentre) if np.isfinite(barycentre) else -1
     imgline, linesP = intersection(frame, True)
     if linesP is not None:
-        thetacenters, rcenters, theta3, nblignes = groupir(linesP)
+        thetacenters, rcenters, theta3, nblignes, thetast, tabr = groupir(linesP)
         if nblignes == 2:
             print('intersection détecté!')
             x1, y1 = centre_inter(thetacenters, rcenters)
@@ -99,10 +104,10 @@ def normal(frame):
             pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, 2)
             cv2.line(imgline, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
             cv2.line(imgline, pt3, pt4, (0,255,255), 3, cv2.LINE_AA)
-            passage_inter(thetacenters, rcenters, x1, y1)
-            return 'intersection', imgline
+            #etat = passage_inter(thetacenters, rcenters, x1, y1)
+            return 'normal', imgline
         else:
-            suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
+            #suivi(difference, barycentre, trajectoire[index], trajectoire[index - 1])
             if barint != -1:
                 pt1, pt2, _, _ = centers2lines(thetacenters, rcenters, 1)
                 cv2.line(imgline, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
