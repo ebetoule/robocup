@@ -11,20 +11,24 @@ import camera
 from intersections import get_barycentre
 import deplacements_robot as dr
 import enregistrement
+last = 0
 
 trajectoire = np.zeros((100))
+vitesse = 20
 
 def temps():
+    global last
     temps = time.time()
     duree = temps - last
     last = temps
-    print(duree * 1000)# en seconde?
+    print(f'{duree * 1000:.2f} ms')# en milliseconde
+
     
 def suivi(barycentre, dernier, avant):
     difference = 640 / 2 - barycentre
     if not np.isfinite(barycentre):
         print("perte de la ligne")
-        dr.stop()
+        #dr.stop()
         print(avant, dernier)
         if avant < dernier:
             dr.gauche(vitesse)
@@ -43,12 +47,12 @@ def suivi(barycentre, dernier, avant):
         dr.droit(2 * vitesse / np.abs(difference))
     
 if __name__ == '__main__':
-    picam2 = camera.init_pycam()#initialisation de la caméra
-    last = 0 # pour mesurer le temps
-    write = True #écriture de film 
+    picam2 = camera.init_pycam()#initialisation de la caméra 
+    write = True
+    running = True#écriture de film 
     index = 0 # obtention du dernier barycentre donnée stocké dans le tableau trajectoire
     if write:
-        enregistrement.demarrer(size=(640*2, 480))# démarrer l'écriture du film
+        enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
     try:
         while running:
             temps()
