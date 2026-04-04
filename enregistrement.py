@@ -9,6 +9,7 @@ import curses
 from curses import wrapper
 from camera import init_pycam, size
 from deplacements_robot import avancer, gauche, droit, stop
+frame_queue = queue.Queue(maxsize = 10)
 
 
 # Fonction pour le thread d'enregistrement
@@ -27,6 +28,19 @@ def recording_thread(q, nom, fps=15, size=size):
         #frame = cv2.resize(frame, (width, height))
         writer.write(frame)
     writer.release()
+    
+def demarrer(fps = 15, size=(640, 480)):
+    now = datetime.now()
+    filename = now.strftime("%m-%d-%Y_%H-%M-%S")+".mp4"
+    rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename, fps, size))
+    rec_thread.start()
+
+def stop():
+    frame_queue.put(None)
+
+def ajouter(frame):
+    if not frame_queue.full():
+        frame_queue.put(frame)
 
 if __name__ == "__main__":
     speed = 10
