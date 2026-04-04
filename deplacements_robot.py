@@ -5,14 +5,15 @@ motor_right = Motor('A')
 motor_left = Motor('B')
 
 def droit(vitesse):
-    vitesse = max(vitesse, -100)
-    vitesse = min(vitesse, 100)
-    motor_right.start(vitesse)
+#     vitesse = max(vitesse, -100)
+#     vitesse = min(vitesse, 100)
+#     motor_right.start(vitesse)
+    motor_right.pwm(vitesse)
     
 def gauche(vitesse):
-    vitesse = max(vitesse, -100)
-    vitesse = min(vitesse, 100)
-    motor_left.start(-vitesse)
+#     vitesse = max(vitesse, -100)
+#     vitesse = min(vitesse, 100)
+    motor_left.pwm(-vitesse)
     
 def stop():
     motor_right.stop()

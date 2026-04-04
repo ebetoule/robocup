@@ -14,7 +14,7 @@ import enregistrement
 last = 0
 
 trajectoire = np.zeros((100))
-vitesse = 20
+vitesse = 0.5
 
 def temps():
     global last
@@ -31,20 +31,19 @@ def suivi(barycentre, dernier, avant):
         #dr.stop()
         print(avant, dernier)
         if avant < dernier:
+            dr.droit(-vitesse)
             dr.gauche(vitesse)
         if avant > dernier:
             dr.droit(vitesse)
-    if difference == 0 :
-        print("En avant")
-        dr.avancer(vitesse)
-    if difference > 0 :
+            dr.gauche(-vitesse)
+    if difference >= 0 :
         print("à gauche")
         dr.droit(vitesse)
-        dr.gauche(2 * vitesse / np.abs(difference))
+        dr.gauche(vitesse + (-2 * vitesse/320)*difference)
     if difference < 0 :
         print("à droite")
         dr.gauche(vitesse)
-        dr.droit(2 * vitesse / np.abs(difference))
+        dr.droit(vitesse + (2 * vitesse/320)*difference)
     
 if __name__ == '__main__':
     picam2 = camera.init_pycam()#initialisation de la caméra 
