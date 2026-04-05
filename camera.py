@@ -9,10 +9,11 @@ def init_pycam():
     config = picam2.create_still_configuration(
         sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']},
         buffer_count=2,
-        main={'size':size}
+        main={'size':size, "format": "RGB888"}
         #controls={'FrameRate': 50},
     )
     picam2.configure(config)#"preview")
+    print(picam2.camera_configuration())
     picam2.start()
     return picam2
 
