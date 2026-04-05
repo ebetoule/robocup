@@ -32,8 +32,10 @@ def detectcarre(frame):
             #print(M)
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
-            carre.append([cx, cy])
-            cv2.circle(frame, (int(cx), int(cy)), 1, (255,0,0), -1)
+            area = cv2.contourArea(data)
+            if data > 5000:
+                carre.append([cx, cy])
+                cv2.circle(frame, (int(cx), int(cy)), 1, (255,0,0), -1)
             #print(f'ça marche normalement : {cx}, {cy}')
         except:
             pass
@@ -174,7 +176,7 @@ def groupir2(lines, img, ngroups=2):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     #plt.close('all')
-    img = cv2.imread('test2.png')
+    img = cv2.imread('inter.jpg')
     plt.ion()
     #plt.imshow(img)
     
