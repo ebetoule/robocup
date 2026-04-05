@@ -203,7 +203,7 @@ if __name__ == '__main__':
     compteur = 0
     while(video.isOpened()):
         ret, frame = video.read()
-        frame = frame[:, 640:, :]
+        #frame = frame[:, 640:, :]
         compteur = compteur + 1
         timing.append(time.time())
         #print(f"Frame : {compteur}")
@@ -211,10 +211,12 @@ if __name__ == '__main__':
             #imgline, linesP = intersection(frame, draw=True)
             imgline, linesP = analyse.detectdroite(frame)
             #thetacenters, rcenters, theta3, nblignes, thetast, tabr = groupir(linesP)
-            img, thetagroup, rgroup = analyse.groupir2(linesP, imgline, 2)
-            theta3 = thetagroup[1]-thetagroup[0]
-            analyse.drawdroites(thetagroup, rgroup, img)
-            print(theta3)
+            #img, thetagroup, rgroup = analyse.groupir2(linesP, imgline, 2)
+            #theta3 = thetagroup[1]-thetagroup[0]
+            #analyse.drawdroites(thetagroup, rgroup, img)
+            contours, mask, carre = analyse.detectcarre(frame)
+            frame_analysé = analyse.draw_result(carre, frame)
+            #print(theta3)
             # les dessiner sur cdst
             #plt.scatter(tabr, thetast)
             #if nblignes == 2:
@@ -229,13 +231,13 @@ if __name__ == '__main__':
                 pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
                 cv2.line(imgline, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
                 """
-            cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", imgline)
+            cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", frame_analysé)
             
             #cv2.imshow("Masque", mask)
             #cv2.imshow("Masque", visio(mask, frame))
             key = cv2.waitKey(20)
-            time.sleep(0.1)
-            if compteur == 100:
+            #time.sleep(0.1)
+            if compteur == 1000:
                 break
             if key == ord('q'):
                 break

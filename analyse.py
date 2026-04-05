@@ -33,14 +33,20 @@ def detectcarre(frame):
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             area = cv2.contourArea(data)
-            if data > 5000:
+            if area > 1000:
                 carre.append([cx, cy])
-                cv2.circle(frame, (int(cx), int(cy)), 1, (255,0,0), -1)
             #print(f'ça marche normalement : {cx}, {cy}')
-        except:
-            pass
-    return contours, frame, carre
+        except Exception as E:
+            print(E)
+    return contours, mask, carre
 
+def draw_result(results, frame):
+    frame_analysé = frame.copy()
+    for i in range(len(results)):
+        cx, cy = results[i]
+        cv2.circle(frame_analysé, (cx, cy), 10, (255,0,0), -1)
+    return frame_analysé
+    
 def detectdroite(frame):
     """ Prend l'image traitée et applique la transformation de ouaf pour
     avoir une liste de lignes. Si on veut dessiner, on met draw = True"""
@@ -175,8 +181,8 @@ def groupir2(lines, img, ngroups=2):
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    #plt.close('all')
-    img = cv2.imread('inter.jpg')
+    plt.close('all')
+    img = cv2.imread('test.jpg')
     plt.ion()
     #plt.imshow(img)
     
@@ -191,6 +197,7 @@ if __name__ == '__main__':
     plt.imshow(mask2)
     
     contours, mask3, carre = detectcarre(img)
+    mask3 = draw_result(carre, img)
     #print(contours)
     #drawsegments(contours, img, color=(0,0,255))
     plt.figure('contours')
