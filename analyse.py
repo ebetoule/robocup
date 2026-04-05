@@ -6,7 +6,7 @@ def detectligne(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     #denoised = cv2.medianBlur(hsv, 5)
     lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 250, 90])
+    upper_black = np.array([180, 250, 50])
     mask = cv2.inRange(hsv, lower_black, upper_black)
     #kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
     #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)   # enlève petits points
@@ -14,10 +14,23 @@ def detectligne(frame):
     #mask = ((frame < 50).all(axis=2)*255).astype('uint8')
     return mask
 
+
+def valeurs_hsv(frame):
+    import matplotlib.pyplot as plt
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    legende = ['teinte', 'saturation', 'valeur']
+    fig = plt.figure()
+    axes = fig.subplots(1,3)#nblignes, nbcolonnes
+    for i, axe in enumerate(axes):
+        axe.imshow(hsv[:,:,i])
+        axe.set_title(legende[i])
+    plt.show()
+    
+    
 def detectvert(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    min_vert = np.array([40, 50, 50])#Teinte, saturation, value
-    max_vert = np.array([80, 255, 255])
+    min_vert = np.array([50, 50, 50])#Teinte, saturation, value
+    max_vert = np.array([90, 255, 255])
     mask = cv2.inRange(hsv, min_vert, max_vert)
     return mask
 
@@ -182,7 +195,7 @@ def groupir2(lines, img, ngroups=2):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('test.jpg')
+    img = cv2.imread('testn.jpg')
     plt.ion()
     #plt.imshow(img)
     
