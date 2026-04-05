@@ -29,12 +29,12 @@ def detectcarre(frame):
     for data in contours:
         try:
             M = cv2.moments(data)
-            print(M)
+            #print(M)
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             carre.append([cx, cy])
-            cv2.circle(frame, (int(cx), int(cy)), 30, (255,0,0), -1)
-            print(f'ça marche normalement : {cx}, {cy}')
+            cv2.circle(frame, (int(cx), int(cy)), 1, (255,0,0), -1)
+            #print(f'ça marche normalement : {cx}, {cy}')
         except:
             pass
     return contours, frame, carre
