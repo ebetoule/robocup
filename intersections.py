@@ -194,7 +194,7 @@ if 0:#__name__ == "__main__":
         cv2.destroyAllWindows()
 if __name__ == '__main__':
     #input_dir = '/home/eloise/monpi/robocup/'
-    filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4', '03-28-2026_15-34-06.mp4'][2]
+    filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4', '03-28-2026_15-34-06.mp4', "last.mp4"][3]
     video = cv2.VideoCapture(filename)#(input_dir + filename)
     if (video.isOpened() == False):
         print("Error opening the video file")
