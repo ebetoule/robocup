@@ -41,12 +41,12 @@ def detectcarre(frame):
     carre = []
     for data in contours:
         try:
-            M = cv2.moments(data)
-            #print(M)
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
             area = cv2.contourArea(data)
             if area > 1000:
+                M = cv2.moments(data)
+            #print(M)
+                cx = int(M['m10']/M['m00'])
+                cy = int(M['m01']/M['m00'])
                 carre.append([cx, cy])
             #print(f'ça marche normalement : {cx}, {cy}')
         except Exception as E:

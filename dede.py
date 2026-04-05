@@ -13,7 +13,8 @@ import analyse
 from intersections import get_barycentre
 import deplacements_robot as dr
 import enregistrement
-last = 0
+
+lock = threading.Lock()
 
 trajectoire = np.zeros((100))
 vitesse = 0.5
@@ -27,19 +28,23 @@ def commencer():
 def detecter():
     global intersection, frame
     while detection_intersection:
-        contours, frame, carre = analyse.detectcarre(frame)
+        with lock:
+            framecopy = frame.copy()
+        contours, mask, carre = analyse.detectcarre(framecopy)
+        time.sleep(0.05)
         if len(carre) > 0:
             intersection = True
-            print('on a une intersection!')
+            #print('on a une intersection!')
         else:
             intersection = False
-            print("on a pas d'intersection")
+            #print("on a pas d'intersection")
 def temps():
     global last
     temps = time.time()
     duree = temps - last
     last = temps
     #print(f'{duree * 1000:.2f} ms')# en milliseconde
+    return duree * 1000
 
     
 def suivi(barycentre, dernier, avant):
@@ -66,16 +71,19 @@ def suivi(barycentre, dernier, avant):
 if __name__ == '__main__':
     picam2 = camera.init_pycam()#initialisation de la caméra 
     write = True
+    durees_execution = []
     running = True#écriture de film 
     index = 0# obtention du dernier barycentre donnée stocké dans le tableau trajectoire
     frame = picam2.capture_array()
     if write:
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
     commencer()
+    last = time.time()
     try:
         while running:
-            temps()
-            frame = picam2.capture_array() #prise de l'image qui va être traitée
+            durees_execution.append(temps())
+            with lock:
+                frame = picam2.capture_array() #prise de l'image qui va être traitée
             barycentre = get_barycentre(frame, -5)
             if np.isfinite(barycentre):
                 index = (index+1)%100
@@ -94,4 +102,5 @@ if __name__ == '__main__':
         enregistrement.stop()
         detection_intersection = False
         dr.stop()
+        print(f'moyenne:{np.mean(np.array(durees_execution)[1:]):.2f},max:{np.max(np.array(durees_execution)[1:]):.2f}, min:{np.min(np.array(durees_execution)[1:]):.2f}')
         picam2.close()
