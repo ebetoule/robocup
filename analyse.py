@@ -14,6 +14,57 @@ def detectligne(frame):
     #mask = ((frame < 50).all(axis=2)*255).astype('uint8')
     return mask
 
+def centre_inter(tabtheta, lsr):
+    ''' prend les r et theta des deux droites détectées et calcule
+    leur intersection '''
+    theta1 = tabtheta[0]
+    theta2 = tabtheta[1]
+    r1 = lsr[0]
+    r2 = lsr[1]
+    cos1 = np.cos(theta1)
+    cos2 = np.cos(theta2)
+    sin1 = np.sin(theta1)
+    sin2 = np.sin(theta2)
+    y = (r2 * cos1 - cos2 * r1) / (sin2 * cos1 - cos2 * sin1)
+    x = (r1 - sin1 * y) / cos1
+    return x, y
+
+def directions(thetagroup, rgroup):
+    '''On calcule le centre de l'intersection puis on prend quatre points
+en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
+    cx, cy = centre_inter(thetagroup, rgroup)
+    dct = []
+    for theta, r in zip(thetagroup, rgroup):
+        for d in 100, -100:
+            a = np.cos(theta)
+            b = np.sin(theta)
+            pt = (int(cx + d * (-b)), int(cy + d*(a)))
+            dct.append(pt)
+    return dct
+
+def directions_possible(img, thetagroup, rgroup):
+    dct = directions(thetagroup, rgroup)
+    mask = detectligne(img)
+    dct_noir = []
+    for cx, cy in dct:
+        if couleur_moyenne(mask, cx, cy) > 200:
+            dct_noir.append((cx, cy))
+    stop
+    return dct_noir
+            
+def couleur_moyenne(mask, x, y, size=[10, 10]):
+    '''On fait un 'carré' virtuel de 10 pixel par 10 pixel
+et on retourne la moyenne de la couleur du carré'''
+    x1 = int(max(x - size[1], 0))
+    x2 = int(min(x + size[1], mask.shape[0]))
+    y1 = int(max(y - size[0], 0))
+    y2 = int(min(y + size[0], mask.shape[1]))
+    return np.mean(mask[y1:y2, x1:x2])
+
+def draw_direction_possibles(img, centre, dct, color=(0, 150, 0)):
+    for d in dct:
+        cv2.line(img, centre, d, color, 15, cv2.LINE_AA)
+    return img
 
 def valeurs_hsv(frame):
     import matplotlib.pyplot as plt
@@ -215,9 +266,11 @@ if __name__ == '__main__':
     #drawsegments(contours, img, color=(0,0,255))
     plt.figure('contours')
     plt.imshow(mask3)
+    
+    
     # test de detectdroite
 #     plt.figure('detectdroite')
-#     imgl, lines = detectdroite(img)
+    imgl, lines = detectdroite(img)
 #     plt.imshow(drawsegments(lines, imgl))
     
     #test de groupir
@@ -225,6 +278,13 @@ if __name__ == '__main__':
 #     pt1, pt2 = lines2segments(thetacenters, rcenters)
 #     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
     
+    #test des directions:
+    imgp, thetagroup, rgroup = groupir2(lines, img)
+    x, y = centre_inter(thetagroup, rgroup)
+    dct = directions_possible(imgp, thetagroup, rgroup)
+    draw_direction_possibles(imgp, (int(x), int(y)), dct)
+    plt.figure('directions')
+    plt.imshow(imgp)
     #test de groupir2
 #     plt.figure('groups')
 #     imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
