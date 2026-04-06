@@ -272,7 +272,7 @@ def groupir2(lines, img, ngroups=2):
     for i in range(ngroups):
         danslegroupe = (groups.squeeze() == i)#squeeze enlève une dimension
         thetargroup.append(np.array(thetar)[danslegroupe,:])
-        img = drawsegments(lines[danslegroupe,:,:], img, color=colors[i])
+        #img = drawsegments(lines[danslegroupe,:,:], img, color=colors[i])
         #cas particulier des droites horyzontales
         if np.abs(thetagroup[i]) > np.radians(85):  
             rgroup.append(np.mean(np.sign(thetagroup[i]) * np.sign(thetargroup[i][:,0]) * thetargroup[i][:,1]))
@@ -282,7 +282,7 @@ def groupir2(lines, img, ngroups=2):
     #plt.scatter(lines_rs, thetas, c=groups)
     #plt.xlim(-1, 1)
     #plt.ylim(-1, 1)
-    return img, thetagroup, rgroup
+    return thetagroup, rgroup
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
