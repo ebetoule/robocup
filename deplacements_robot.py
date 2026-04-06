@@ -34,3 +34,8 @@ def aller(distance):
     motor_left.run_for_degrees(-dist, 10, False)
     motor_right.run_for_degrees(dist, 10, False)
     stop()
+    
+def passage_inter(theta1, theta2, dist):
+    tourner(theta1)
+    aller(dist)
+    tourner(theta2)

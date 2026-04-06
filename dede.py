@@ -8,9 +8,8 @@ import threading
 import queue
 from datetime import datetime
 import camera
-import intersections
+import intersections as inter
 import analyse
-from intersections import get_barycentre
 import deplacements_robot as dr
 import enregistrement
 
@@ -30,14 +29,17 @@ def detecter():
     while detection_intersection:
         with lock:
             framecopy = frame.copy()
-        contours, mask, carre = analyse.detectcarre(framecopy)
+        theta3 = inter.detect_inter(framecopy)
         time.sleep(0.05)
-        if len(carre) > 0:
-            intersection = True
-            #print('on a une intersection!')
-        else:
-            intersection = False
-            #print("on a pas d'intersection")
+        #contours, mask, carre = analyse.detectcarre(framecopy)
+        if theta3 is not None:
+            if abs(abs(theta3) - 90) > 10:
+                intersection = True
+                print('peut-être')
+            else:
+                intersection = False
+                print("on a pas d'intersection")
+
 def temps():
     global last
     temps = time.time()
@@ -84,14 +86,20 @@ if __name__ == '__main__':
             durees_execution.append(temps())
             with lock:
                 frame = picam2.capture_array() #prise de l'image qui va être traitée
-            barycentre = get_barycentre(frame, -5)
+            barycentre = inter.get_barycentre(frame, -5)
             if np.isfinite(barycentre):
                 index = (index+1)%100
                 trajectoire[index] = barycentre
             suivi(barycentre, trajectoire[index], trajectoire[index - 1])
             if intersection:
-                print('intersection détecter!')
-                break
+                resultat = inter.gestion_intersection(frame)
+                if resultat is not None:
+                    theta1, theta2, dist = inter.calcul_inter(resultat)
+                    print('intersection détecter!')
+                    print(f'theta1 = {theta1}, theta2 = {theta2}, dist = {dist}')
+                    break
+                else:
+                    pass
             if write:
                 enregistrement.ajouter(frame)#ajouter l'image dans le film
     except KeyboardInterrupt:

@@ -6,7 +6,11 @@ import time
 import matplotlib.pyplot as plt
 import analyse
         
-    
+resultats = {'tout droit' : 0,
+             'à gauche' : 90,
+             'à droite' : 90,
+             'demi-tour' : 180}
+
 def centre_inter(tabtheta, lsr):
     ''' prend les r et theta des deux droites détectées et calcule
     leur intersection '''
@@ -22,6 +26,42 @@ def centre_inter(tabtheta, lsr):
     x = (r1 - sin1 * y) / cos1
     return x, y
 
+def detect_inter(img):
+    #try:
+    imgl, lines = analyse.detectdroite(img)
+    if lines is None:
+        return None
+    imgp, thetagroup, rgroup = analyse.groupir2(lines, img)
+    theta3 = np.degrees(thetagroup[1]-thetagroup[0])
+    return theta3
+    #except:
+    #    print("on a un problème")
+    #    return None
+
+def gestion_intersection(img):
+    imgl, lines = analyse.detectdroite(img)
+    imgp, thetagroup, rgroup = analyse.groupir2(lines, img)
+    theta3 = np.degrees(thetagroup[1] - thetagroup[0])
+    if abs(abs(theta3) - 90) > 10:
+        x, y = analyse.centre_inter(thetagroup, rgroup)
+        if y > 100:
+            dct = analyse.directions_possible(imgp, thetagroup, rgroup)
+            carrebon = analyse.carre_bon(img, (x, y))
+            directionf = direction_finale(carrebon, dct, (x, y))
+            return directionf
+        else:
+            return None
+    else:
+        return None
+
+def calcul_inter(resultat):
+    x, y = cg.image2damier(centre)
+    theta1 = np.arctan2(x, y)
+    theta1 = np.degrees(theta1)
+    dist = np.sqrt(x**2 + y**2)
+    theta2 = resultats[resultat]
+    return theta1, theta2, dist
+    
 def get_barycentre(frame, irow, seuil=50):
     """ renvoie le barycentre
     1. transforme en gris
@@ -211,10 +251,10 @@ if __name__ == '__main__':
             #imgline, linesP = intersection(frame, draw=True)
             imgline, linesP = analyse.detectdroite(frame)
             #thetacenters, rcenters, theta3, nblignes, thetast, tabr = groupir(linesP)
-            #img, thetagroup, rgroup = analyse.groupir2(linesP, imgline, 2)
+            img, thetagroup, rgroup = analyse.groupir2(linesP, imgline, 2)
             #theta3 = thetagroup[1]-thetagroup[0]
-            #analyse.drawdroites(thetagroup, rgroup, img)
-            contours, mask, carre = analyse.detectcarre(frame)
+            analyse.drawdroites(thetagroup, rgroup, img)
+            mask, carre = analyse.detectcarre(frame)
             frame_analysé = analyse.draw_result(carre, frame)
             #print(theta3)
             # les dessiner sur cdst
