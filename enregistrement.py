@@ -1,6 +1,7 @@
 import cv2
 import threading
 import queue
+import os
 #import time
 #import buildhat
 #from buildhat import Motor
@@ -29,11 +30,14 @@ def recording_thread(q, nom, fps=15, size=size):
         #frame = cv2.resize(frame, (width, height))
         writer.write(frame)
     writer.release()
+    if os.path.exists('last.mp4'):
+        os.remove('last.mp4')
+    os.link(nom, 'last.mp4')
     
 def demarrer(fps = 15, size=(640, 480)):
     now = datetime.now()
-    #filename = now.strftime("%m-%d-%Y_%H-%M-%S")+".mp4"
-    filename = "last.mp4"
+    filename = now.strftime("%m-%d-%Y_%H-%M-%S")+".mp4"
+    #filename = "last.mp4"
     rec_thread = threading.Thread(target=recording_thread, args=(frame_queue, filename, fps, size))
     rec_thread.start()
 

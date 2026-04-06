@@ -29,12 +29,12 @@ def detecter():
     while detection_intersection:
         with lock:
             framecopy = frame.copy()
-        theta3 = inter.detect_inter(framecopy)
+        theta3, x, y = inter.detect_inter(framecopy)
         #print(theta3)
         time.sleep(0.05)
         #contours, mask, carre = analyse.detectcarre(framecopy)
         if theta3 is not None:
-            if abs(abs(theta3) - 90) < 10:
+            if abs(abs(theta3) - 90) < 10 and y > 100:
                 intersection = True
                 print('peut-être')
             else:
@@ -93,6 +93,7 @@ if __name__ == '__main__':
                 trajectoire[index] = barycentre
             suivi(barycentre, trajectoire[index], trajectoire[index - 1])
             if intersection:
+                dr.stop()
                 resultat = inter.gestion_intersection(frame)
                 if resultat is not None:
                     theta1, theta2, dist = inter.calcul_inter(resultat)

@@ -31,10 +31,11 @@ def detect_inter(img):
     #try:
     imgl, lines = analyse.detectdroite(img)
     if lines is None:
-        return None
+        return None, None, None
     thetagroup, rgroup = analyse.groupir2(lines, img)
     theta3 = np.degrees(thetagroup[1]-thetagroup[0])
-    return theta3
+    x, y = analyse.centre_inter(thetagroup, rgroup)
+    return theta3, x, y
     #except:
     #    print("on a un problème")
     #    return None
@@ -49,9 +50,12 @@ def gestion_intersection(img):
         if y > 100:
             dct = analyse.directions_possible(img, thetagroup, rgroup)
             carrebon = analyse.carre_bon(img, (x, y))
-            directionf = analyse.direction_finale(carrebon, dct, (x, y))
-            return {'direction finale':directionf,
-                    'centre':(x, y)}
+            if dct is not None:
+                directionf = analyse.direction_finale(carrebon, dct, (x, y))
+                return {'direction finale':directionf,
+                        'centre':(x, y)}
+            else:
+                return None
         else:
             return None
     else:
