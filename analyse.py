@@ -47,9 +47,8 @@ def directions_possible(img, thetagroup, rgroup):
     mask = detectligne(img)
     dct_noir = []
     for cx, cy in dct:
-        if couleur_moyenne(mask, cx, cy) > 200:
+        if couleur_moyenne(mask, cx, cy) > 100:
             dct_noir.append((cx, cy))
-    stop
     return dct_noir
             
 def couleur_moyenne(mask, x, y, size=[10, 10]):
@@ -62,9 +61,22 @@ et on retourne la moyenne de la couleur du carré'''
     return np.mean(mask[y1:y2, x1:x2])
 
 def draw_direction_possibles(img, centre, dct, color=(0, 150, 0)):
+    color = [(255, 0, 0),(0, 0, 255), (0, 255, 0), (0, 150, 0)]
+    i=0
     for d in dct:
-        cv2.line(img, centre, d, color, 15, cv2.LINE_AA)
+        cv2.line(img, centre, d, color[i], 15, cv2.LINE_AA)
+        i+=1
     return img
+
+def direction_à_prendre(dct, centre):
+    if len(dct)==4 or len(dct)==3:
+        direction='tout droit'
+    else:
+        if dct[0][0] < centre[0]:
+            direction='à gauche'
+        else:
+            direction = 'à droite'
+    return direction
 
 def valeurs_hsv(frame):
     import matplotlib.pyplot as plt
@@ -102,8 +114,37 @@ def detectcarre(frame):
             #print(f'ça marche normalement : {cx}, {cy}')
         except Exception as E:
             print(E)
-    return contours, mask, carre
+    print("coucou1", carre)
+    return mask, carre
 
+def carre_bon(frame, centre):
+    mask, carre = detectcarre(frame)
+    print("coucou2",carre)
+    bon_carre = []
+    if len(carre) > 0:
+        for i in range(len(carre)):
+            if carre[i][1] > centre[1]:
+                print("coucou 3 et 4 ", carre[i])
+                bon_carre.append(carre[i])
+    return bon_carre
+
+def direction_carre(carre, centre):
+    if len(carre)==2:
+        direction = 'demi-tour'
+    else :
+        if carre[0][0] < centre[0]:
+            direction = 'à gauche'
+        else:
+            direction = 'à droite'
+    return direction
+
+def direction_finale(carre, dct, centre):
+    if len(carre) > 0:
+        direction = direction_carre(carre, centre)
+    else:
+        direction = direction_à_prendre(dct, centre)
+    return direction
+    
 def draw_result(results, frame):
     frame_analysé = frame.copy()
     for i in range(len(results)):
@@ -251,21 +292,21 @@ if __name__ == '__main__':
     #plt.imshow(img)
     
     # test de détectligne
-    plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
-    mask = detectligne(img)
-    plt.imshow(mask)
+#     plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
+#     mask = detectligne(img)
+#     plt.imshow(mask)
+#     
+#     #test de detect_vert:
+#     plt.figure('vert')
+#     mask2 = detectvert(img)
+#     plt.imshow(mask2)
     
-    #test de detect_vert:
-    plt.figure('vert')
-    mask2 = detectvert(img)
-    plt.imshow(mask2)
-    
-    contours, mask3, carre = detectcarre(img)
-    mask3 = draw_result(carre, img)
-    #print(contours)
-    #drawsegments(contours, img, color=(0,0,255))
-    plt.figure('contours')
-    plt.imshow(mask3)
+#     mask3, carre = detectcarre(img)
+#     mask3 = draw_result(carre, img)
+#     #print(contours)
+#     #drawsegments(contours, img, color=(0,0,255))
+#     plt.figure('contours')
+#     plt.imshow(mask3)
     
     
     # test de detectdroite
@@ -281,10 +322,23 @@ if __name__ == '__main__':
     #test des directions:
     imgp, thetagroup, rgroup = groupir2(lines, img)
     x, y = centre_inter(thetagroup, rgroup)
+    #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
     dct = directions_possible(imgp, thetagroup, rgroup)
-    draw_direction_possibles(imgp, (int(x), int(y)), dct)
-    plt.figure('directions')
-    plt.imshow(imgp)
+#    draw_direction_possibles(imgp, (int(x), int(y)), dct)
+#     directionl = direction_à_prendre(dct, (x, y))
+#     plt.figure('directions')
+#     plt.imshow(imgp)
+#     print(directionl)
+    # test des carre:
+    carrebon = carre_bon(img, (x, y))
+#     print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
+    
+    # test direction avec carre:
+#     directionc = direction_carre(carrebon, (x, y))
+#     print(directionc)
+    
+    directionf = direction_finale(carrebon, dct, (x, y))
+    print('direction finale = ', directionf)
     #test de groupir2
 #     plt.figure('groups')
 #     imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
