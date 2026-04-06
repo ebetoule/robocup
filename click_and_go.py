@@ -1,7 +1,5 @@
 import cv2
-import camera
 import numpy as np
-from deplacements_robot import avancer, gauche, droit, stop, tourner, aller
 from calibration import objpoints
 # from buildhat import Motor
 # motor_right = Motor('A')
@@ -32,6 +30,8 @@ x1 = None
 y1 = None
 
 def obtenir_coord(action, x, y, flags, userdata):
+    from deplacements_robot import tourner, aller
+
     global nbfois, x1, y1
     if action == cv2.EVENT_LBUTTONDBLCLK:
         if nbfois == 2:
@@ -68,6 +68,7 @@ def image2damier(x, y):
     return x1, y1
 
 if __name__ == '__main__':
+    import camera
     picam2 = camera.init_pycam()
     image = picam2.capture_array()
     cv2.imshow('coucou', image)

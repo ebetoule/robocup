@@ -1,5 +1,4 @@
 import cv2
-import camera
 import numpy as np
 """
 [[ 3.48476347e-02 -3.12056777e-03 -1.23421610e+01]
@@ -44,6 +43,7 @@ def click(action, x, y, flags, userdata):
 
 
 if __name__ == '__main__':
+    import camera
     picam2 = camera.init_pycam()
     image = picam2.capture_array()
     cv2.imshow('coucou', image)

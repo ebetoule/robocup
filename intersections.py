@@ -228,21 +228,8 @@ def centers2lines(thetacenters, rcenters, nbline):
     else:
         return pt1, pt2, 0, 0
 
-if 0:#__name__ == "__main__":
-         
-    filename = 'Intersection/intersection1.jpg'
-    frame = cv2.imread(filename)#, cv2.IMREAD_GRAYSCALE)
-    cdstP, linesP = intersection(frame, draw=True)
-    centre1, centre2 = groupir(linesP)
-    print(centre1, centre2)
-    cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
-    key = cv2.waitKey(20)
-       #time.sleep(0.1)
-    if key == ord('q'):
-        cv2.destroyAllWindows()
 if __name__ == '__main__':
-    #input_dir = '/home/eloise/monpi/robocup/'
-    filename = ['Intersection/02-16-2026_15-12-43.mp4', 'Intersection/02-20-2026_12-26-47.mp4', '03-28-2026_15-34-06.mp4', "last.mp4"][3]
+    filename = "last.mp4"
     video = cv2.VideoCapture(filename)#(input_dir + filename)
     if (video.isOpened() == False):
         print("Error opening the video file")
@@ -251,19 +238,12 @@ if __name__ == '__main__':
     compteur = 0
     while(video.isOpened()):
         ret, frame = video.read()
-        #frame = frame[:, 640:, :]
         compteur = compteur + 1
         timing.append(time.time())
-        #print(f"Frame : {compteur}")
         if ret == True:
-            #imgline, linesP = intersection(frame, draw=True)
-            imgline, linesP = analyse.detectdroite(frame)
-            #thetacenters, rcenters, theta3, nblignes, thetast, tabr = groupir(linesP)
-            img, thetagroup, rgroup = analyse.groupir2(linesP, imgline, 2)
-            #theta3 = thetagroup[1]-thetagroup[0]
-            analyse.drawdroites(thetagroup, rgroup, img)
-            mask, carre = analyse.detectcarre(frame)
-            frame_analysé = analyse.draw_result(carre, frame)
+            barycentre = get_barycentre(frame, -5)
+            resultat = gestion_intersection(frame)
+            frame_analysé = analyse.draw_barycentre(frame,barycentre)
             #print(theta3)
             # les dessiner sur cdst
             #plt.scatter(tabr, thetast)
@@ -279,19 +259,16 @@ if __name__ == '__main__':
                 pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
                 cv2.line(imgline, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
                 """
-            cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", frame_analysé)
             
-            #cv2.imshow("Masque", mask)
-            #cv2.imshow("Masque", visio(mask, frame))
+            cv2.imshow("barycentre", frame_analysé)
+            
             key = cv2.waitKey(20)
-            #time.sleep(0.1)
             if compteur == 1000:
                 break
             if key == ord('q'):
                 break
             if key == ord("p"):
                 time.sleep(1)
-            #time.sleep(0.1)
         else:
           break
  

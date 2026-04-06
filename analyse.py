@@ -154,6 +154,12 @@ def draw_result(results, frame):
         cv2.circle(frame_analysé, (cx, cy), 10, (255,0,0), -1)
     return frame_analysé
     
+def draw_barycentre(frame, barycentre):
+    if np.isfinite(barycentre):
+        return cv2.circle(frame.copy(), (int(barycentre), frame.shape[0]-5), 10, (255,0,0), -1)
+    else:
+        return frame
+
 def detectdroite(frame):
     """ Prend l'image traitée et applique la transformation de ouaf pour
     avoir une liste de lignes. Si on veut dessiner, on met draw = True"""
