@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import analyse
 import click_and_go as cg
         
-resultats = {'tout droit' : 0,
-             'à gauche' : 90,
-             'à droite' : -90,
-             'demi-tour' : 180}
+# resultats = {'tout droit' : 0,
+#              'à gauche' : 90,
+#              'à droite' : -90,
+#              'demi-tour' : 180}
 
 def centre_inter(tabtheta, lsr):
     ''' prend les r et theta des deux droites détectées et calcule
@@ -46,14 +46,19 @@ def gestion_intersection(img):
     theta3 = np.degrees(thetagroup[1] - thetagroup[0])
     if abs(abs(theta3) - 90) < 10:
         x, y = analyse.centre_inter(thetagroup, rgroup)
-        print(y)
+        #print(y)
         if y > 100:
             dct = analyse.directions_possible(img, thetagroup, rgroup)
             carrebon = analyse.carre_bon(img, (x, y))
             if dct is not None:
                 directionf = analyse.direction_finale(carrebon, dct, (x, y))
                 return {'direction finale':directionf,
-                        'centre':(x, y)}
+                        'centre': (x, y),
+                        'carres': carrebon,
+                        'directions': dct,
+                        'lines': lines,
+                        'r': rgroup,
+                        'theta': thetagroup}
             else:
                 return None
         else:
@@ -244,6 +249,7 @@ if __name__ == '__main__':
             barycentre = get_barycentre(frame, -5)
             resultat = gestion_intersection(frame)
             frame_analysé = analyse.draw_barycentre(frame,barycentre)
+            frame_analysé = analyse.draw_result(frame_analysé, resultat)
             #print(theta3)
             # les dessiner sur cdst
             #plt.scatter(tabr, thetast)
@@ -261,7 +267,8 @@ if __name__ == '__main__':
                 """
             
             cv2.imshow("barycentre", frame_analysé)
-            
+            if resultat is not None:
+                time.sleep(1)
             key = cv2.waitKey(20)
             if compteur == 1000:
                 break

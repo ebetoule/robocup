@@ -1,6 +1,15 @@
 import cv2
 import numpy as np
 
+def draw_result(frame, result):
+    if result is not None:
+        img_ana = draw_carre(result['carres'], frame.copy())
+        img_ana = draw_direction_possibles(img_ana, result['centre'], result['directions'])
+        img_ana = draw_direction_finale(result['direction finale'], result['centre'], img_ana)
+        print(result['direction finale'])
+        return img_ana
+    return frame
+
 def detectligne(frame):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -27,7 +36,7 @@ def centre_inter(tabtheta, lsr):
     sin2 = np.sin(theta2)
     y = (r2 * cos1 - cos2 * r1) / (sin2 * cos1 - cos2 * sin1)
     x = (r1 - sin1 * y) / cos1
-    return x, y
+    return int(x), int(y)
 
 def directions(thetagroup, rgroup):
     '''On calcule le centre de l'intersection puis on prend quatre points
@@ -69,13 +78,19 @@ def draw_direction_possibles(img, centre, dct, color=(0, 150, 0)):
     return img
 
 def direction_à_prendre(dct, centre):
+    diffl = centre[1] - dct[0][1]
+    bdct = dct[0]
+    for i in range(len(dct)-1):
+        if (centre[1] - dct[i+1][1]) > diffl:
+            diffl = centre[1] - dct[i][1]
+            bdct = dct[i]
     if len(dct)==4 or len(dct)==3:
-        direction='tout droit'
+        direction = (dct[-1], 'tout_droit')
     else:
-        if dct[0][0] < centre[0]:
-            direction='à gauche'
+        if bdct[0] < centre[0]:
+            direction = (bdct, 'à gauche')
         else:
-            direction = 'à droite'
+            direction = (bdct, 'à droite')
     return direction
 
 def valeurs_hsv(frame):
@@ -114,40 +129,52 @@ def detectcarre(frame):
             #print(f'ça marche normalement : {cx}, {cy}')
         except Exception as E:
             print(E)
-    print("coucou1", carre)
     return mask, carre
 
 def carre_bon(frame, centre):
     mask, carre = detectcarre(frame)
-    print("coucou2",carre)
     bon_carre = []
     if len(carre) > 0:
         for i in range(len(carre)):
             if carre[i][1] > centre[1]:
-                print("coucou 3 et 4 ", carre[i])
                 bon_carre.append(carre[i])
     return bon_carre
 
-def direction_carre(carre, centre):
+def direction_carre(carre, dct, centre):
     if len(carre)==2:
-        direction = 'demi-tour'
+        for i in range(len(dct)):
+            if (dct[i][1] - centre[1]) > 50:
+                dm = dct[i]
+        direction = (dm, 'demi-tour')
     else :
         if carre[0][0] < centre[0]:
-            direction = 'à gauche'
+            for i in range(len(dct)):
+                if (centre[0] - dct[i][0]) > 50:
+                    dg = dct[i]
+                    direction = (dg, 'à gauche')
         else:
-            direction = 'à droite'
+            for i in range(len(dct)):
+                if (dct[i][0] - centre[0]) > 50:
+                    dd = dct[i]
+                    direction = (dd, 'à droite')
     return direction
 
 def direction_finale(carre, dct, centre):
     if len(carre) > 0:
-        direction = direction_carre(carre, centre)
+        direction = direction_carre(carre, dct, centre)
     elif len(dct) > 0:
         direction = direction_à_prendre(dct, centre)
     else:
         direction = None
     return direction
+
+def draw_direction_finale(direction, centre, frame):
+    if direction is not None:
+        color = (255, 0, 255)
+        return cv2.arrowedLine(frame, centre, direction[0], color, 3)
+    return frame
     
-def draw_result(results, frame):
+def draw_carre(results, frame):
     frame_analysé = frame.copy()
     for i in range(len(results)):
         cx, cy = results[i]
@@ -310,7 +337,7 @@ if __name__ == '__main__':
 #     plt.imshow(mask2)
     
 #     mask3, carre = detectcarre(img)
-#     mask3 = draw_result(carre, img)
+#     mask3 = draw_carre(carre, img)
 #     #print(contours)
 #     #drawsegments(contours, img, color=(0,0,255))
 #     plt.figure('contours')
