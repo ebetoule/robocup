@@ -12,6 +12,7 @@ import intersections as inter
 import analyse
 import deplacements_robot as dr
 import enregistrement
+import click_and_go as cg
 
 lock = threading.Lock()
 
@@ -29,17 +30,16 @@ def detecter():
     while detection_intersection:
         with lock:
             framecopy = frame.copy()
-        theta3, x, y = inter.detect_inter(framecopy)
+        theta3, x, y, _, _, _ = inter.detect_inter(framecopy)
         #print(theta3)
         time.sleep(0.05)
         #contours, mask, carre = analyse.detectcarre(framecopy)
         if theta3 is not None:
-            if abs(abs(theta3) - 90) < 10 and y > 100:
-                intersection = True
-                print('peut-être')
-            else:
-                intersection = False
-                print("on a pas d'intersection")
+            intersection = True
+            print('peut-être')
+        else:
+            intersection = False
+            print("on a pas d'intersection")
 
 def temps():
     global last
@@ -96,10 +96,11 @@ if __name__ == '__main__':
                 dr.stop()
                 resultat = inter.gestion_intersection(frame)
                 if resultat is not None:
-                    theta1, theta2, dist = inter.calcul_inter(resultat)
+                    p1 = resultat['centre']
+                    p2 = resultat['direction finale'][0]
                     print('intersection détecter!')
-                    print(f'theta1 = {theta1}, theta2 = {theta2}, dist = {dist}')
-                    dr.passage_inter(theta1, theta2, dist)
+                    print(f'{p1=},{p2=}')
+                    cg.go(p1, p2)
                 else:
                     pass
             if write:

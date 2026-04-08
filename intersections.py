@@ -30,43 +30,40 @@ def centre_inter(tabtheta, lsr):
 def detect_inter(img):
     #try:
     imgl, lines = analyse.detectdroite(img)
-    if lines is None:
-        return None, None, None
+    if lines is None or len(lines) < 2:
+        return None, None, None, None, None, None
     thetagroup, rgroup = analyse.groupir2(lines, img)
     theta3 = np.degrees(thetagroup[1]-thetagroup[0])
     x, y = analyse.centre_inter(thetagroup, rgroup)
-    return theta3, x, y
+    if abs(abs(theta3) - 90) < 10 and y > 100:
+        return theta3, x, y, thetagroup, rgroup, lines
+    else:
+        return None, None, None, None, None, None
     #except:
     #    print("on a un problème")
     #    return None
 
 def gestion_intersection(img):
-    imgl, lines = analyse.detectdroite(img)
-    thetagroup, rgroup = analyse.groupir2(lines, img)
-    theta3 = np.degrees(thetagroup[1] - thetagroup[0])
-    if abs(abs(theta3) - 90) < 10:
-        x, y = analyse.centre_inter(thetagroup, rgroup)
-        #print(y)
-        if y > 100:
-            dct = analyse.directions_possible(img, thetagroup, rgroup)
-            carrebon = analyse.carre_bon(img, (x, y))
-            if dct is not None:
-                directionf = analyse.direction_finale(carrebon, dct, (x, y))
-                if directionf is None:
-                    return None
-                return {'direction finale':directionf,
-                        'centre': (x, y),
-                        'carres': carrebon,
-                        'directions': dct,
-                        'lines': lines,
-                        'r': rgroup,
-                        'theta': thetagroup}
-            else:
+    theta3, x, y, thetagroup, rgroup, lines = detect_inter(img)
+    if theta3 is not None:
+        dct = analyse.directions_possible(img, thetagroup, rgroup)
+        carrebon = analyse.carre_bon(img, (x, y))
+        if dct is not None:
+            directionf = analyse.direction_finale(carrebon, dct, (x, y))
+            if directionf is None:
                 return None
+            return {'direction finale':directionf,
+                    'centre': (x, y),
+                    'carres': carrebon,
+                    'directions': dct,
+                    'lines': lines,
+                    'r': rgroup,
+                    'theta': thetagroup}
         else:
             return None
     else:
         return None
+
 
 def calcul_inter(resultat):
     x1, y1 = resultat['centre']

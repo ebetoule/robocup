@@ -170,7 +170,10 @@ def direction_carre(carre, dct, centre):
 
 def direction_finale(carre, dct, centre):
     if len(carre) > 0:
-        direction = direction_carre(carre, dct, centre)
+        try:
+            direction = direction_carre(carre, dct, centre)
+        except:
+            return None
     elif len(dct) > 0:
         direction = direction_à_prendre(dct, centre)
     else:
