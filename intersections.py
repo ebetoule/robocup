@@ -52,6 +52,8 @@ def gestion_intersection(img):
             carrebon = analyse.carre_bon(img, (x, y))
             if dct is not None:
                 directionf = analyse.direction_finale(carrebon, dct, (x, y))
+                if directionf is None:
+                    return None
                 return {'direction finale':directionf,
                         'centre': (x, y),
                         'carres': carrebon,
@@ -241,56 +243,55 @@ if __name__ == '__main__':
     timing = []
     ret, exemple = video.read()
     compteur = 0
-    while(video.isOpened()):
-        ret, frame = video.read()
-        compteur = compteur + 1
-        timing.append(time.time())
-        if ret == True:
-            barycentre = get_barycentre(frame, -5)
-            resultat = gestion_intersection(frame)
-            frame_analysé = analyse.draw_barycentre(frame,barycentre)
-            frame_analysé = analyse.draw_result(frame_analysé, resultat)
-            #print(theta3)
-            # les dessiner sur cdst
-            #plt.scatter(tabr, thetast)
-            #if nblignes == 2:
-            #x, y = centre_inter(thetagroup, rgroup)
-            #mask = detectligne(frame)
-                #pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
-                #cv2.line(imgline, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
-               # cv2.line(imgline, pt3, pt4, (0,255,255), 3, cv2.LINE_AA)
-            #cv2.circle(imgline, (int(x), int(y)), 30, (255,0,0), -1)
-            """
-            else :
-                pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
-                cv2.line(imgline, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
+    try :
+        while(video.isOpened()):
+            ret, tempframe = video.read()
+            if ret:
+                compteur = compteur + 1
+                timing.append(time.time())
+                frame = tempframe
+                barycentre = get_barycentre(frame, -5)
+                resultat = gestion_intersection(frame)
+                frame_analysé = analyse.draw_barycentre(frame,barycentre)
+                frame_analysé = analyse.draw_result(frame_analysé, resultat)
+                print(resultat)
+                #print(theta3)
+                # les dessiner sur cdst
+                #plt.scatter(tabr, thetast)
+                #if nblignes == 2:
+                #x, y = centre_inter(thetagroup, rgroup)
+                #mask = detectligne(frame)
+                    #pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
+                    #cv2.line(imgline, pt1, pt2, (0,255,255), 3, cv2.LINE_AA)
+                   # cv2.line(imgline, pt3, pt4, (0,255,255), 3, cv2.LINE_AA)
+                #cv2.circle(imgline, (int(x), int(y)), 30, (255,0,0), -1)
                 """
-            
-            cv2.imshow("barycentre", frame_analysé)
-            if resultat is not None:
-                time.sleep(1)
-            key = cv2.waitKey(20)
-            if compteur == 1000:
-                break
-            if key == ord('q'):
-                break
-            if key == ord("p"):
-                time.sleep(1)
-        else:
-          break
- 
+                else :
+                    pt1, pt2, pt3, pt4 = centers2lines(thetacenters, rcenters, nblignes)
+                    cv2.line(imgline, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
+                    """
+                cv2.imshow("barycentre", frame_analysé)
+                if resultat is not None:
+                    key = cv2.waitKey(1000)
+                    print(compteur)
+                else:
+                    key = cv2.waitKey(20)
+                if compteur == 1000:
+                    break
+                if key == ord('q'):
+                    break
+                if key == ord("p"):
+                    time.sleep(1)
+            else:
+              break
+    finally:
+        video.release()
+        cv2.destroyAllWindows()
+        cv2.imwrite('test.png', frame) 
     moy = np.mean(np.diff(timing))
     print(f'fps = {moy * 1000:.1f} ms')
-    video.release()
-    cv2.destroyAllWindows() 
-    import matplotlib.pyplot as plt
-    plt.ion()
-    fig = plt.figure()
-    axe1, axe2 = fig.subplots(1, 2)
-    axe1.imshow(frame)
-    axe2.imshow(imgline)
-    axe2.set_title(f"{len(linesP)} lignes détectées")
-    cv2.imwrite('test.jpg', frame)
+    
+    
     #fig2 = plt.figure("distribution r et theta")
     #axe1, axe2 = fig2.subplots(1, 2)
     #axe1.hist(lines_rs)

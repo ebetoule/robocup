@@ -4,8 +4,10 @@ import numpy as np
 def draw_result(frame, result):
     if result is not None:
         img_ana = draw_carre(result['carres'], frame.copy())
+        img_ana = drawdroites(result['theta'], result['r'], img_ana)
         img_ana = draw_direction_possibles(img_ana, result['centre'], result['directions'])
         img_ana = draw_direction_finale(result['direction finale'], result['centre'], img_ana)
+        img_ana = drawsegments(result['lines'], img_ana, color=(0,0,255))
         print(result['direction finale'])
         return img_ana
     return frame
@@ -15,7 +17,7 @@ def detectligne(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     #denoised = cv2.medianBlur(hsv, 5)
     lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 250, 50])
+    upper_black = np.array([180, 250, 70])
     mask = cv2.inRange(hsv, lower_black, upper_black)
     #kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
     #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)   # enlève petits points
@@ -42,6 +44,7 @@ def directions(thetagroup, rgroup):
     '''On calcule le centre de l'intersection puis on prend quatre points
 en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
     cx, cy = centre_inter(thetagroup, rgroup)
+    print(f'centre = {cx, cy}')
     dct = []
     for theta, r in zip(thetagroup, rgroup):
         for d in 100, -100:
@@ -51,11 +54,17 @@ en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
             dct.append(pt)
     return dct
 
+def draw_directions(dct, mask, centre):
+    for d in dct:
+        cv2.line(mask, centre, d, (255, 0, 0), 15, cv2.LINE_AA)
+    return mask
+
 def directions_possible(img, thetagroup, rgroup):
     dct = directions(thetagroup, rgroup)
     mask = detectligne(img)
     dct_noir = []
     for cx, cy in dct:
+        print(f'couleur moyenne en {cx}, {cy}: {couleur_moyenne(mask, cx, cy)} ')
         if couleur_moyenne(mask, cx, cy) > 100:
             dct_noir.append((cx, cy))
     return dct_noir
@@ -196,7 +205,7 @@ def detectdroite(frame):
     mask = detectligne(frame)
     dst = cv2.Canny(mask, 85, 90, apertureSize=3)
     imgl = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-    linesP = cv2.HoughLinesP(dst, rho=1, theta=np.pi / 180, threshold=40, minLineLength=60, maxLineGap=20)
+    linesP = cv2.HoughLinesP(dst, rho=0.5, theta=2*np.pi / 180, threshold=40, minLineLength=60, maxLineGap=30)
     return  imgl, linesP
 
 def drawsegments(linesP, imgl, color=(0,0,255)):
@@ -313,6 +322,7 @@ def groupir2(lines, img, ngroups=2):
             rgroup.append(np.mean(np.sign(thetagroup[i]) * np.sign(thetargroup[i][:,0]) * thetargroup[i][:,1]))
         else:
             rgroup.append(np.mean(thetargroup[i][:,1]))
+    print(thetagroup, rgroup)
     #plt.scatter(x, y, c=groups)
     #plt.scatter(lines_rs, thetas, c=groups)
     #plt.xlim(-1, 1)
@@ -322,15 +332,15 @@ def groupir2(lines, img, ngroups=2):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('testn.jpg')
+    img = cv2.imread('test.png')
     plt.ion()
     #plt.imshow(img)
     
     # test de détectligne
-#     plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
-#     mask = detectligne(img)
-#     plt.imshow(mask)
-#     
+    plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
+    mask = detectligne(img)
+    plt.imshow(mask)
+    valeurs_hsv(img)
 #     #test de detect_vert:
 #     plt.figure('vert')
 #     mask2 = detectvert(img)
@@ -345,9 +355,9 @@ if __name__ == '__main__':
     
     
     # test de detectdroite
-#     plt.figure('detectdroite')
+    plt.figure('detectdroite')
     imgl, lines = detectdroite(img)
-#     plt.imshow(drawsegments(lines, imgl))
+    plt.imshow(drawsegments(lines, imgl))
     
     #test de groupir
 #     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
@@ -355,10 +365,14 @@ if __name__ == '__main__':
 #     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
     
     #test des directions:
-    imgp, thetagroup, rgroup = groupir2(lines, img)
+    thetagroup, rgroup = groupir2(lines, img)
     x, y = centre_inter(thetagroup, rgroup)
+    dct1 = directions(thetagroup, rgroup)
+    mask1 = draw_directions(dct1, img.copy(), (x, y))
+    plt.figure('directions')
+    plt.imshow(mask1)
     #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
-    dct = directions_possible(imgp, thetagroup, rgroup)
+    dct = directions_possible(img, thetagroup, rgroup)
 #    draw_direction_possibles(imgp, (int(x), int(y)), dct)
 #     directionl = direction_à_prendre(dct, (x, y))
 #     plt.figure('directions')
@@ -371,9 +385,10 @@ if __name__ == '__main__':
     # test direction avec carre:
 #     directionc = direction_carre(carrebon, (x, y))
 #     print(directionc)
-    
+    import intersections
     directionf = direction_finale(carrebon, dct, (x, y))
     print('direction finale = ', directionf)
+    resultat = intersections.gestion_intersection(img)
     #test de groupir2
 #     plt.figure('groups')
 #     imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
