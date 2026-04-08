@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from calibration import objpoints
+import deplacements_robot as dr
 # from buildhat import Motor
 # motor_right = Motor('A')
 # motor_left = Motor('B')
@@ -35,17 +36,21 @@ def obtenir_coord(action, x, y, flags, userdata):
     global nbfois, x1, y1
     if action == cv2.EVENT_LBUTTONDBLCLK:
         if nbfois == 2:
-            x2, y2 = image2damier(x, y)
-            theta1, theta3, dist = xy2thetadist(x1, y1, x2, y2)
-            print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
-            tourner(-theta1)
-            aller(dist)
-            tourner(-theta3)
+            go((x1, y1), (x, y))
             nbfois = 1
         elif nbfois == 1:
-            x1, y1 = image2damier(x, y)
+            x1, y1 = x, y
             nbfois = nbfois + 1
 
+def go(p1, p2):
+    x1, y1 = image2damier(*p1)
+    x2, y2 = image2damier(*p2)
+    theta1, theta3, dist = xy2thetadist(x1, y1, x2, y2)
+    print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
+    dr.tourner(-theta1)
+    dr.aller(dist)
+    dr.tourner(-theta3)
+    
 def xy2thetadist(x1, y1, x2, y2):
     theta1 = np.arctan2(x1, y1)
     theta1 = np.degrees(theta1)
