@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import analyse
 import click_and_go as cg
         
-# resultats = {'tout droit' : 0,
-#              'à gauche' : 90,
-#              'à droite' : -90,
-#              'demi-tour' : 180}
+resultats = {'tout droit' : 0,
+            'à gauche' : 90,
+              'à droite' : -90,
+              'demi-tour' : 180}
 
 def centre_inter(tabtheta, lsr):
     ''' prend les r et theta des deux droites détectées et calcule
