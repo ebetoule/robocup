@@ -32,7 +32,7 @@ def detecter():
             framecopy = frame.copy()
         theta3, x, y, _, _, _ = inter.detect_inter(framecopy)
         #print(theta3)
-        time.sleep(0.05)
+        #time.sleep(0.05)
         #contours, mask, carre = analyse.detectcarre(framecopy)
         if theta3 is not None:
             intersection = True

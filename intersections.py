@@ -34,11 +34,12 @@ def detect_inter(img):
         return None, None, None, None, None, None
     thetagroup, rgroup = analyse.groupir2(lines, img)
     theta3 = np.degrees(thetagroup[1]-thetagroup[0])
-    x, y = analyse.centre_inter(thetagroup, rgroup)
-    if abs(abs(theta3) - 90) < 10 and y > 100:
-        return theta3, x, y, thetagroup, rgroup, lines
-    else:
-        return None, None, None, None, None, None
+    if abs(abs(theta3) - 90) < 10:
+        x, y = analyse.centre_inter(thetagroup, rgroup)
+        if y > 100:
+            return theta3, x, y, thetagroup, rgroup, lines
+
+    return None, None, None, None, None, None
     #except:
     #    print("on a un problème")
     #    return None
