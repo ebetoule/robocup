@@ -47,7 +47,7 @@ en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
     print(f'centre = {cx, cy}')
     dct = []
     for theta, r in zip(thetagroup, rgroup):
-        for d in 100, -100:
+        for d in 80, -80:
             a = np.cos(theta)
             b = np.sin(theta)
             pt = (int(cx + d * (-b)), int(cy + d*(a)))
