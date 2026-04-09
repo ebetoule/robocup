@@ -73,9 +73,10 @@ def couleur_moyenne(mask, x, y, size=[10, 10]):
     '''On fait un 'carré' virtuel de 10 pixel par 10 pixel
 et on retourne la moyenne de la couleur du carré'''
     x1 = int(max(x - size[1], 0))
-    x2 = int(min(x + size[1], mask.shape[0]))
+    x2 = int(min(x + size[1], mask.shape[1]))
     y1 = int(max(y - size[0], 0))
-    y2 = int(min(y + size[0], mask.shape[1]))
+    y2 = int(min(y + size[0], mask.shape[0]))
+    print(y1, y2, x1, x2)
     return np.mean(mask[y1:y2, x1:x2])
 
 def draw_direction_possibles(img, centre, dct, color=(0, 150, 0)):
