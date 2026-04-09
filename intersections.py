@@ -36,7 +36,7 @@ def detect_inter(img):
     theta3 = np.degrees(thetagroup[1]-thetagroup[0])
     if abs(abs(theta3) - 90) < 10:
         x, y = analyse.centre_inter(thetagroup, rgroup)
-        if y > 100:
+        if y > 150:
             return theta3, x, y, thetagroup, rgroup, lines
 
     return None, None, None, None, None, None

@@ -86,13 +86,18 @@ def draw_direction_possibles(img, centre, dct, color=(0, 150, 0)):
         i+=1
     return img
 
+def trouve_minimum(dct):
+    ymin = 481
+    for i in range(len(dct)):
+        if dct[i][1] < ymin:
+            ymin = dct[i][1]
+            imin = i
+    return imin
+    
+    
 def direction_à_prendre(dct, centre):
-    diffl = centre[1] - dct[0][1]
-    bdct = dct[0]
-    for i in range(len(dct)-1):
-        if (centre[1] - dct[i+1][1]) > diffl:
-            diffl = centre[1] - dct[i][1]
-            bdct = dct[i]
+    imin = trouve_minimum(dct)
+    return dct[imin], 'tout droit'
     if len(dct)==4 or len(dct)==3:
         direction = (dct[-1], 'tout_droit')
     else:
@@ -174,7 +179,7 @@ def direction_finale(carre, dct, centre):
             direction = direction_carre(carre, dct, centre)
         except:
             return None
-    elif len(dct) > 0:
+    elif len(dct) > 1:
         direction = direction_à_prendre(dct, centre)
     else:
         direction = None

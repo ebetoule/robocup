@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 from calibration import objpoints
-import deplacements_robot as dr
 # from buildhat import Motor
 # motor_right = Motor('A')
 # motor_left = Motor('B')
@@ -43,6 +42,7 @@ def obtenir_coord(action, x, y, flags, userdata):
             nbfois = nbfois + 1
 
 def go(p1, p2):
+    import deplacements_robot as dr
     x1, y1 = image2damier(*p1)
     x2, y2 = image2damier(*p2)
     theta1, theta3, dist = xy2thetadist(x1, y1, x2, y2)
