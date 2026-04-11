@@ -17,7 +17,7 @@ import click_and_go as cg
 lock = threading.Lock()
 
 trajectoire = np.zeros((100))
-vitesse = 0.45
+vitesse = 0.4
 intersection = False
 detection_intersection = True
 
