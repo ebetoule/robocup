@@ -8,7 +8,7 @@ def draw_result(frame, result):
         img_ana = draw_direction_possibles(img_ana, result['centre'], result['directions'])
         img_ana = draw_direction_finale(result['direction finale'], result['centre'], img_ana)
         img_ana = drawsegments(result['lines'], img_ana, color=(0,0,255))
-        print(result['direction finale'])
+        #print(result['direction finale'])
         return img_ana
     return frame
 
@@ -44,7 +44,7 @@ def directions(thetagroup, rgroup):
     '''On calcule le centre de l'intersection puis on prend quatre points
 en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
     cx, cy = centre_inter(thetagroup, rgroup)
-    print(f'centre = {cx, cy}')
+    #print(f'centre = {cx, cy}')
     dct = []
     for theta, r in zip(thetagroup, rgroup):
         for d in 80, -80:
@@ -64,7 +64,6 @@ def directions_possible(img, thetagroup, rgroup):
     mask = detectligne(img)
     dct_noir = []
     for cx, cy in dct:
-        print(f'couleur moyenne en {cx}, {cy}: {couleur_moyenne(mask, cx, cy)} ')
         if couleur_moyenne(mask, cx, cy) > 100:
             dct_noir.append((cx, cy))
     return dct_noir
@@ -76,7 +75,6 @@ et on retourne la moyenne de la couleur du carré'''
     x2 = int(min(x + size[1], mask.shape[1]))
     y1 = int(max(y - size[0], 0))
     y2 = int(min(y + size[0], mask.shape[0]))
-    print(y1, y2, x1, x2)
     return np.mean(mask[y1:y2, x1:x2])
 
 def draw_direction_possibles(img, centre, dct, color=(0, 150, 0)):
@@ -138,7 +136,6 @@ def detectfin(frame):
             area = cv2.contourArea(data)
             if area > 1000:
                 M = cv2.moments(data)
-            #print(M)
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
                 return cx, cy
@@ -164,11 +161,9 @@ def detectcarre(frame):
             area = cv2.contourArea(data)
             if area > 1000:
                 M = cv2.moments(data)
-            #print(M)
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
                 carre.append([cx, cy])
-            #print(f'ça marche normalement : {cx}, {cy}')
         except Exception as E:
             print(E)
     return mask, carre
@@ -253,13 +248,10 @@ def ligne_droite(frame):
             area = cv2.contourArea(data)
             if area > 1000:
                 M = cv2.moments(data)
-            #print(M)
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
-                print(cx, cy)
                 if cx is not None:
                     return cx, cy
-            #print(f'ça marche normalement : {cx}, {cy}')
         except Exception as E:
             print(E)
     return None
@@ -267,7 +259,6 @@ def ligne_droite(frame):
 
 def drawsegments(linesP, imgl, color=(0,0,255)):
     if linesP is not None:
-        #print(len(linesP))
         for i in range(0, len(linesP)):
             l = linesP[i][0]
             cv2.line(imgl, (l[0], l[1]), (l[2], l[3]), color, 3, cv2.LINE_AA)
@@ -373,17 +364,10 @@ def groupir2(lines, img, ngroups=2):
     for i in range(ngroups):
         danslegroupe = (groups.squeeze() == i)#squeeze enlève une dimension
         thetargroup.append(np.array(thetar)[danslegroupe,:])
-        #img = drawsegments(lines[danslegroupe,:,:], img, color=colors[i])
-        #cas particulier des droites horyzontales
         if np.abs(thetagroup[i]) > np.radians(85):  
             rgroup.append(np.mean(np.sign(thetagroup[i]) * np.sign(thetargroup[i][:,0]) * thetargroup[i][:,1]))
         else:
             rgroup.append(np.mean(thetargroup[i][:,1]))
-    #print(thetagroup, rgroup)
-    #plt.scatter(x, y, c=groups)
-    #plt.scatter(lines_rs, thetas, c=groups)
-    #plt.xlim(-1, 1)
-    #plt.ylim(-1, 1)
     return thetagroup, rgroup
 
 if __name__ == '__main__':

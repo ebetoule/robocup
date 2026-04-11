@@ -46,7 +46,7 @@ def go(p1, p2):
     x1, y1 = image2damier(*p1)
     x2, y2 = image2damier(*p2)
     theta1, theta3, dist = xy2thetadist(x1, y1, x2, y2)
-    print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
+    #print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
     dr.tourner(-theta1)
     dr.aller(dist)
     dr.tourner(-theta3)
