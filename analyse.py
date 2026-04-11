@@ -358,7 +358,7 @@ def groupir2(lines, img, ngroups=2):
             rgroup.append(np.mean(np.sign(thetagroup[i]) * np.sign(thetargroup[i][:,0]) * thetargroup[i][:,1]))
         else:
             rgroup.append(np.mean(thetargroup[i][:,1]))
-    print(thetagroup, rgroup)
+    #print(thetagroup, rgroup)
     #plt.scatter(x, y, c=groups)
     #plt.scatter(lines_rs, thetas, c=groups)
     #plt.xlim(-1, 1)

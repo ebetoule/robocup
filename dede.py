@@ -19,6 +19,7 @@ lock = threading.Lock()
 trajectoire = np.zeros((100))
 vitesse = 0.4
 intersection = False
+fin = False
 detection_intersection = True
 
 def commencer():
@@ -26,20 +27,23 @@ def commencer():
     ana_thread.start()
 
 def detecter():
-    global intersection, frame
+    global intersection, frame, fin
     while detection_intersection:
         with lock:
             framecopy = frame.copy()
+        fin1 = analyse.detectfin(framecopy)
+        if fin1 is not None and fin1[1] > 300: 
+            fin = True
         theta3, x, y, _, _, _ = inter.detect_inter(framecopy)
         #print(theta3)
         #time.sleep(0.05)
         #contours, mask, carre = analyse.detectcarre(framecopy)
         if theta3 is not None:
             intersection = True
-            print('peut-être')
+            #print('peut-être')
         else:
             intersection = False
-            print("on a pas d'intersection")
+            #print("on a pas d'intersection")
 
 def temps():
     global last
@@ -53,7 +57,7 @@ def temps():
 def suivi(barycentre, dernier, avant):
     difference = 640 / 2 - barycentre
     if not np.isfinite(barycentre):
-        print("perte de la ligne")
+        #print("perte de la ligne")
         #dr.stop()
         #print(avant, dernier)
         if avant < dernier:
@@ -92,6 +96,12 @@ if __name__ == '__main__':
                 index = (index+1)%100
                 trajectoire[index] = barycentre
             suivi(barycentre, trajectoire[index], trajectoire[index - 1])
+            if fin:
+                print('fin du parcours')
+                p1 = analyse.detectfin(frame.copy())
+                p2 = p1
+                cg.go(p1, p2)
+                break
             if intersection:
                 dr.stop()
                 resultat = inter.gestion_intersection(frame)
