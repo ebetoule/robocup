@@ -54,22 +54,28 @@ def temps():
     return duree * 1000
 
     
-def suivi(barycentre, dernier, avant, x, b2):
+def suivi(barycentre, dernier, avant, x, b2, nbfois):
     difference = 640 / 2 - barycentre
     if not np.isfinite(barycentre):
         #print("perte de la ligne")
         #dr.stop()
         #print(avant, dernier)
+        if nbfois == 1:
+            if avant < dernier:
+                dr.tourner(180)
+            elif avant > dernier:
+                dr.tourner(-180)
+            nbfoi == 0
         if b2 is not None:
             diff = b2 - dernier
             if diff > -10 and diff < 10:
                 cg.go((x, b2), (x, b2))
-        elif avant < dernier:
-            dr.droit(-vitesse)
-            dr.gauche(vitesse)
-        elif avant > dernier:
-            dr.droit(vitesse)
-            dr.gauche(-vitesse)
+        elif nbfois == 0:
+                if avant < dernier:
+                    dr.tourner(-90)
+                elif avant > dernier:
+                    dr.tourner(90)
+                nbfois == 1
     if difference >= 0 :
         #print("à gauche")
         dr.droit(vitesse)
@@ -85,6 +91,7 @@ if __name__ == '__main__':
     durees_execution = []
     running = True#écriture de film 
     index = 0# obtention du dernier barycentre donnée stocké dans le tableau trajectoire
+    nbfois = 0
     frame = picam2.capture_array()
     if write:
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
@@ -101,6 +108,7 @@ if __name__ == '__main__':
                 trajectoire[index] = barycentre
                 b2 = None
                 x = None
+                nbfois = 0
             else:
                 ligne = analyse.ligne_droite(frame)
                 if ligne is not None :
@@ -108,7 +116,7 @@ if __name__ == '__main__':
                     x = ligne[0]
                 else:
                     b2 = None
-            suivi(barycentre, trajectoire[index], trajectoire[index - 1], x, b2)
+            suivi(barycentre, trajectoire[index], trajectoire[index - 1], x, b2, nbfois)
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(frame.copy())
