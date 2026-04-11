@@ -61,21 +61,23 @@ def suivi(barycentre, dernier, avant, x, b2, nbfois):
         #dr.stop()
         #print(avant, dernier)
         if nbfois == 1:
+            print('toujours perte de la ligne, on retourne')
             if avant < dernier:
                 dr.tourner(180)
             elif avant > dernier:
                 dr.tourner(-180)
-            nbfoi == 0
+            nbfois == 0
         if b2 is not None:
             diff = b2 - dernier
             if diff > -10 and diff < 10:
                 cg.go((x, b2), (x, b2))
         elif nbfois == 0:
-                if avant < dernier:
-                    dr.tourner(-90)
-                elif avant > dernier:
-                    dr.tourner(90)
-                nbfois == 1
+            print('perte de la ligne, on tourne')
+            if avant < dernier:
+                dr.tourner(-90)
+            elif avant > dernier:
+                dr.tourner(90)
+            nbfois == 1
     if difference >= 0 :
         #print("à gauche")
         dr.droit(vitesse)
@@ -130,7 +132,7 @@ if __name__ == '__main__':
                     p1 = resultat['centre']
                     p2 = resultat['direction finale'][0]
                     print('intersection détecter!')
-                    print(f'{p1=},{p2=}')
+                    #print(f'{p1=},{p2=}')
                     cg.go(p1, p2)
                 else:
                     pass
