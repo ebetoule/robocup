@@ -244,7 +244,7 @@ def detectdroite(frame):
     linesP = cv2.HoughLinesP(dst, rho=0.5, theta=2*np.pi / 180, threshold=40, minLineLength=40, maxLineGap=30)
     return  imgl, linesP
 
-def ligne_droite(frame, barycentre):
+def ligne_droite(frame):
     mask = detectligne(frame)
     contours,hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     #cv2.drawContours(mask, contours, -1, (0, 0, 255), 5)
@@ -256,7 +256,9 @@ def ligne_droite(frame, barycentre):
             #print(M)
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
-                return cx, cy
+                print(cx, cy)
+                if cx is not None:
+                    return cx, cy
             #print(f'ça marche normalement : {cx}, {cy}')
         except Exception as E:
             print(E)

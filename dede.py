@@ -54,15 +54,16 @@ def temps():
     return duree * 1000
 
     
-def suivi(barycentre, dernier, avant, b2):
+def suivi(barycentre, dernier, avant, x, b2):
     difference = 640 / 2 - barycentre
     if not np.isfinite(barycentre):
         #print("perte de la ligne")
         #dr.stop()
         #print(avant, dernier)
-        diff = b2 - dernier
-        if diff > -10 and diff < 10:
-            cg.go(b2, b2)
+        if b2 is not None:
+            diff = b2 - dernier
+            if diff > -10 and diff < 10:
+                cg.go((x, b2), (x, b2))
         elif avant < dernier:
             dr.droit(-vitesse)
             dr.gauche(vitesse)
@@ -98,11 +99,16 @@ if __name__ == '__main__':
             if np.isfinite(barycentre):
                 index = (index+1)%100
                 trajectoire[index] = barycentre
+                b2 = None
+                x = None
             else:
-                ligne = analyse.ligne_droite(frame, barycentre)
-                if ligne is not None:
-                    b2 = inter.get_barycentre(frame, ligne [1])
-            suivi(barycentre, trajectoire[index], trajectoire[index - 1], b2)
+                ligne = analyse.ligne_droite(frame)
+                if ligne is not None :
+                    b2 = inter.get_barycentre(frame, ligne[1])
+                    x = ligne[0]
+                else:
+                    b2 = None
+            suivi(barycentre, trajectoire[index], trajectoire[index - 1], x, b2)
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(frame.copy())
