@@ -58,11 +58,13 @@ def perte_de_la_ligne(frame, etat_courant):
     ligne = analyse.ligne_droite(frame)
     if ligne is not None :
         b2 = inter.get_barycentre(frame, ligne[1])
-        x = ligne[0]
+        y = ligne[1]
         if b2 is not None:
             diff = b2 - dernier
+            x1, y1 = cg.image2damier(b2, y)
+            angle = np.arctan(x1, y1)
             if diff > -10 and diff < 10:
-                cg.go((x, b2), (x, b2))
+                cg.go((b2, y), (b2, y))
                 etat_courant['etat'] = 'suivi'
                 return etat_courant
     etat_courant['etat'] = 'recherche'
@@ -72,14 +74,44 @@ def recherche(frame, etat_courant):
     print('recherche de ligne')
     barycentre = inter.get_barycentre(frame, -5)
     if np.isfinite(barycentre):
+        print('ligne retrouvée')
         etat_courant['etat'] = 'suivi'
         return etat_courant
     avant = etat_courant['précédent']
     dernier = etat_courant['barycentre']
     if avant < dernier:
-        dr.tourner(-25)
+        print('à gauche')
+        if etat_courant['tour'] == 0:
+            print('tour 0')
+            dr.tourner(-25)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-25)
+            if etat_courant['angle recherche'] < -90:
+                etat_courant['angle recherche'] = 0
+                etat_courant['tour'] = 1
+        else:
+            print('tour 1')
+            dr.tourner(25)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + 25
+            if etat_courant['angle recherche'] < 90:
+                etat_courant['angle recherche'] = 0
+                etat_courant['tour'] = 0
     else:
-        dr.tourner(25)
+        print('à droite')
+        if etat_courant['tour'] == 0:
+            print('tour 0')
+            dr.tourner(25)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + 25
+            if etat_courant['angle recherche'] < 90:
+                etat_courant['angle recherche'] = 0
+                etat_courant['tour'] = 1
+        else:
+            print('tour 1')
+            dr.tourner(-25)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-25)
+            if etat_courant['angle recherche'] < -90:
+                etat_courant['angle recherche'] = 0 
+                etat_courant['tour'] = 0
+                
     etat_courant['etat'] = 'recherche'
     return etat_courant
     
@@ -121,6 +153,8 @@ if __name__ == '__main__':
     etat_courant = {'barycentre' : 320,
                     'précédent' : 320,
                     'etat' : 'suivi',
+                    'angle recherche': 0,
+                    'tour' : 0,
                     }
     frame = picam2.capture_array()
     if write:
