@@ -62,8 +62,8 @@ def perte_de_la_ligne(frame, etat_courant):
         y = ligne[1]
         if b2 is not None:
             diff = b2 - dernier
-            x1, y1 = cg.image2damier(b2, y)
-            angle = np.arctan(x1, y1)
+            #x1, y1 = cg.image2damier(b2, y)
+            #angle = np.arctan(x1, y1)
             if diff > -10 and diff < 10:
                 cg.go((b2, y), (b2, y))
                 etat_courant['etat'] = 'suivi'
@@ -87,14 +87,12 @@ def recherche(frame, etat_courant):
             dr.tourner(-25)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-25)
             if etat_courant['angle recherche'] < -90:
-                etat_courant['angle recherche'] = 0
                 etat_courant['tour'] = 1
         else:
             print('tour 1')
             dr.tourner(25)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + 25
-            if etat_courant['angle recherche'] < 90:
-                etat_courant['angle recherche'] = 0
+            if etat_courant['angle recherche'] > 90:
                 etat_courant['tour'] = 0
     else:
         print('à droite')
@@ -102,15 +100,13 @@ def recherche(frame, etat_courant):
             print('tour 0')
             dr.tourner(25)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + 25
-            if etat_courant['angle recherche'] < 90:
-                etat_courant['angle recherche'] = 0
+            if etat_courant['angle recherche'] > 90:
                 etat_courant['tour'] = 1
         else:
             print('tour 1')
             dr.tourner(-25)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-25)
             if etat_courant['angle recherche'] < -90:
-                etat_courant['angle recherche'] = 0 
                 etat_courant['tour'] = 0
                 
     etat_courant['etat'] = 'recherche'
@@ -123,19 +119,14 @@ def suivi(frame, etat_courant):
         return etat_courant
     etat_courant['précédent'] = etat_courant['barycentre']
     etat_courant['barycentre'] = barycentre
-#         print('toujours perte de la ligne, on retourne')
-#         if avant < dernier:
-#             dr.tourner(180)
-#         elif avant > dernier:
-#             dr.tourner(-180)
-#         nbfois == 0
+
     difference = 640 / 2 - barycentre
     if difference >= 0 :
-        #print("à gauche")
+        print("à gauche")
         dr.droit(vitesse)
         dr.gauche(vitesse + (-2 * vitesse/320)*difference)
     if difference < 0 :
-        #print("à droite")
+        print("à droite")
         dr.gauche(vitesse)
         dr.droit(vitesse + (2 * vitesse/320)*difference)
     return etat_courant

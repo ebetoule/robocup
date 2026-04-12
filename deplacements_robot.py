@@ -1,8 +1,8 @@
 from buildhat import Motor
 
 vitesse = 20
-motor_right = Motor('A')
-motor_left = Motor('B')
+motor_right = Motor('D')
+motor_left = Motor('C')
 
 def droit(vitesse):
 #     vitesse = max(vitesse, -100)
@@ -20,8 +20,8 @@ def stop():
     motor_left.stop()
     
 def avancer(vitesse):
-    motor_right.start(vitesse)
-    motor_left.start(-vitesse)
+    motor_right.pwm(vitesse)
+    motor_left.pwm(-vitesse)
     
 def tourner(degres):
     degres = degres / 0.56

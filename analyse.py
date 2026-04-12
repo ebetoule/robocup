@@ -40,6 +40,10 @@ def centre_inter(tabtheta, lsr):
     x = (r1 - sin1 * y) / cos1
     return int(x), int(y)
 
+def draw_centre_inter(img, x, y):
+    frame = cv2.circle(img, (x, y), 10, (255,0,0), -1)
+    return frame
+
 def directions(thetagroup, rgroup):
     '''On calcule le centre de l'intersection puis on prend quatre points
 en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
@@ -57,7 +61,7 @@ en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
 def draw_directions(dct, mask, centre):
     for d in dct:
         cv2.line(mask, centre, d, (255, 0, 0), 15, cv2.LINE_AA)
-    return mask
+    return maskdct1
 
 def directions_possible(img, thetagroup, rgroup):
     dct = directions(thetagroup, rgroup)
@@ -371,6 +375,7 @@ def groupir2(lines, img, ngroups=2):
     return thetagroup, rgroup
 
 if __name__ == '__main__':
+    print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
     img = cv2.imread('test.png')
@@ -406,22 +411,26 @@ if __name__ == '__main__':
 #     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
     
     #test des directions:
-#     thetagroup, rgroup = groupir2(lines, img)
-#     x, y = centre_inter(thetagroup, rgroup)
-#     dct1 = directions(thetagroup, rgroup)
-#     mask1 = draw_directions(dct1, img.copy(), (x, y))
+    thetagroup, rgroup = groupir2(lines, img)
+    x, y = centre_inter(thetagroup, rgroup)
+    print(x, y)
+    mask2 = draw_centre_inter(img, x, y)
+    plt.figure('centre')
+    plt.imshow(mask2)
+    dct1 = directions(thetagroup, rgroup)
+    mask1 = draw_directions(dct1, img.copy(), (x, y))
+    plt.figure('directions')
+    plt.imshow(mask1)
+    #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
+    dct = directions_possible(img, thetagroup, rgroup)
+#    draw_direction_possibles(imgp, (int(x), int(y)), dct)
+#     directionl = direction_à_prendre(dct, (x, y))
 #     plt.figure('directions')
-#     plt.imshow(mask1)
-#     #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
-#     dct = directions_possible(img, thetagroup, rgroup)
-# #    draw_direction_possibles(imgp, (int(x), int(y)), dct)
-# #     directionl = direction_à_prendre(dct, (x, y))
-# #     plt.figure('directions')
-# #     plt.imshow(imgp)
-# #     print(directionl)
-#     # test des carre:
-#     carrebon = carre_bon(img, (x, y))
-#     print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
+#     plt.imshow(imgp)
+#     print(directionl)
+    # test des carre:
+    #carrebon = carre_bon(img, (x, y))
+    #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
     
     # test direction avec carre:
 #     directionc = direction_carre(carrebon, (x, y))
