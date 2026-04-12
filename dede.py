@@ -13,6 +13,7 @@ import analyse
 import deplacements_robot as dr
 import enregistrement
 import click_and_go as cg
+import demarrage
 
 lock = threading.Lock()
 
@@ -144,11 +145,12 @@ etats = {'suivi' : suivi,
          'recherche' : recherche,
          }
     
-if __name__ == '__main__':
+def main():
+    global last, frame
     picam2 = camera.init_pycam()#initialisation de la caméra 
     write = True
     durees_execution = []
-    running = True#écriture de film
+    running = True
     nbfois = 0
     etat_courant = {'barycentre' : 320,
                     'précédent' : 320,
@@ -162,7 +164,7 @@ if __name__ == '__main__':
     commencer()
     last = time.time()
     try:
-        while running:
+        while demarrage.en_marche:
             durees_execution.append(temps())
             with lock:
                 frame = picam2.capture_array() #prise de l'image qui va être traitée
@@ -197,3 +199,11 @@ if __name__ == '__main__':
         dr.stop()
         print(f'moyenne:{np.mean(np.array(durees_execution)[1:]):.2f},max:{np.max(np.array(durees_execution)[1:]):.2f}, min:{np.min(np.array(durees_execution)[1:]):.2f}')
         picam2.close()
+
+if __name__ == '__main__':
+    demarrage.commencer()
+    while True:
+        if demarrage.en_marche:
+            main()
+        else:
+            time.sleep(0.1)
