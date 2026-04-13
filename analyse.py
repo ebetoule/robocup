@@ -60,15 +60,15 @@ en haut, en bas, à gauche et à droite sur les lignes de l'intersection'''
 
 def draw_directions(dct, mask, centre):
     for d in dct:
-        cv2.line(mask, centre, d, (255, 0, 0), 15, cv2.LINE_AA)
-    return maskdct1
+        mask = cv2.line(mask, centre, d, (255, 0, 0), 15, cv2.LINE_AA)
+    return mask
 
 def directions_possible(img, thetagroup, rgroup):
     dct = directions(thetagroup, rgroup)
     mask = detectligne(img)
     dct_noir = []
     for cx, cy in dct:
-        if couleur_moyenne(mask, cx, cy) > 100:
+        if couleur_moyenne(mask, cx, cy) > 100 and cy > -1:
             dct_noir.append((cx, cy))
     return dct_noir
             
@@ -429,15 +429,17 @@ if __name__ == '__main__':
 #     plt.imshow(imgp)
 #     print(directionl)
     # test des carre:
-    #carrebon = carre_bon(img, (x, y))
+    carrebon = carre_bon(img, (x, y))
     #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
     
     # test direction avec carre:
 #     directionc = direction_carre(carrebon, (x, y))
 #     print(directionc)
 #     import intersections
-#     directionf = direction_finale(carrebon, dct, (x, y))
-#     print('direction finale = ', directionf)
+    directionf = direction_finale(carrebon, dct, (x, y))
+    print('direction finale = ', directionf)
+    plt.figure('direction finale')
+    plt.imshow(draw_direction_finale(directionf, (x, y), img))
 #     resultat = intersections.gestion_intersection(img)
     #test de groupir2
 #     plt.figure('groups')
