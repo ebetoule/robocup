@@ -4,10 +4,10 @@ from calibration import objpoints
 # from buildhat import Motor
 # motor_right = Motor('A')
 # motor_left = Motor('B')
-imgpoints = np.array([[ 29., 452.],
-       [588., 443.],
-       [ 83.,  15.],
-       [536.,   8.]], dtype=np.float32)
+imgpoints = np.array([[175., 342.],
+                    [465., 342.],
+                    [147.,  73.],
+                    [486.,  73.]], dtype=float32)
 
 # objpoints = np.array([
 #     [-4, 13],
@@ -46,9 +46,12 @@ def go(p1, p2):
     x1, y1 = image2damier(*p1)
     x2, y2 = image2damier(*p2)
     theta1, theta3, dist = xy2thetadist(x1, y1, x2, y2)
-    #print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
+    print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
+    print(f'tourner {-theta1}')
     dr.tourner(-theta1)
+    print(f'aller {dist}')
     dr.aller(dist)
+    print(f'tourner {-theta3}')
     dr.tourner(-theta3)
     
 def xy2thetadist(x1, y1, x2, y2):
@@ -74,6 +77,8 @@ def image2damier(x, y):
 
 if __name__ == '__main__':
     import camera
+    import deplacements_robot as dr
+    dr.demarrer()
     picam2 = camera.init_pycam()
     image = picam2.capture_array()
     cv2.imshow('coucou', image)
@@ -85,3 +90,4 @@ if __name__ == '__main__':
         if key == ord('q'):
             break
     cv2.destroyAllWindows()
+    dr.stop()
