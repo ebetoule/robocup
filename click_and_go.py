@@ -7,7 +7,7 @@ from calibration import objpoints
 imgpoints = np.array([[175., 342.],
                     [465., 342.],
                     [147.,  73.],
-                    [486.,  73.]], dtype=float32)
+                    [486.,  73.]], dtype="float32")
 
 # objpoints = np.array([
 #     [-4, 13],

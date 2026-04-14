@@ -17,13 +17,14 @@ import demarrage
 
 lock = threading.Lock()
 
-vitesse = 0.4
+#vitesse = 0.4
+vitesse = 100
 intersection = False
 fin = False
 detection_intersection = True
 
 def commencer():
-    ana_thread = threading.Thread(target=detecter)
+    ana_thread = threading.Thread(target=detecter, daemon=True)
     ana_thread.start()
 
 def detecter():
@@ -58,16 +59,11 @@ def perte_de_la_ligne(frame, etat_courant):
     dernier = etat_courant['barycentre']
     ligne = analyse.ligne_droite(frame)
     if ligne is not None :
-        b2 = inter.get_barycentre(frame, ligne[1])
-        y = ligne[1]
-        if b2 is not None:
-            diff = b2 - dernier
-            #x1, y1 = cg.image2damier(b2, y)
-            #angle = np.arctan(x1, y1)
-            if diff > -10 and diff < 10:
-                cg.go((b2, y), (b2, y))
-                etat_courant['etat'] = 'suivi'
-                return etat_courant
+        p1, p2 = ligne
+        print(f'{p1=},{p2=}')
+        cg.go(p1, p2)
+        etat_courant['etat'] = 'suivi'
+        return etat_courant
     etat_courant['etat'] = 'recherche'
     return etat_courant
 
@@ -80,32 +76,33 @@ def recherche(frame, etat_courant):
         return etat_courant
     avant = etat_courant['précédent']
     dernier = etat_courant['barycentre']
+    pas = 5
     if avant < dernier:
         print('à gauche')
         if etat_courant['tour'] == 0:
             print('tour 0')
-            dr.tourner(-25)
-            etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-25)
+            dr.tourner(-pas)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-pas)
             if etat_courant['angle recherche'] < -90:
                 etat_courant['tour'] = 1
         else:
             print('tour 1')
-            dr.tourner(25)
-            etat_courant['angle recherche'] = etat_courant['angle recherche'] + 25
+            dr.tourner(pas)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + pas
             if etat_courant['angle recherche'] > 90:
                 etat_courant['tour'] = 0
     else:
         print('à droite')
         if etat_courant['tour'] == 0:
             print('tour 0')
-            dr.tourner(25)
-            etat_courant['angle recherche'] = etat_courant['angle recherche'] + 25
+            dr.tourner(pas)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + pas
             if etat_courant['angle recherche'] > 90:
                 etat_courant['tour'] = 1
         else:
             print('tour 1')
-            dr.tourner(-25)
-            etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-25)
+            dr.tourner(-pas)
+            etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-pas)
             if etat_courant['angle recherche'] < -90:
                 etat_courant['tour'] = 0
                 
@@ -124,11 +121,11 @@ def suivi(frame, etat_courant):
     if difference >= 0 :
         print("à gauche")
         dr.droit(vitesse)
-        dr.gauche(vitesse + (-2 * vitesse/320)*difference)
+        dr.gauche(vitesse + (-2 * vitesse/200)*difference)
     if difference < 0 :
         print("à droite")
         dr.gauche(vitesse)
-        dr.droit(vitesse + (2 * vitesse/320)*difference)
+        dr.droit(vitesse + (2 * vitesse/200)*difference)
     return etat_courant
 
 etats = {'suivi' : suivi,
@@ -152,6 +149,7 @@ def main():
     frame = picam2.capture_array()
     if write:
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
+    dr.demarrer()
     commencer()
     last = time.time()
     try:
@@ -167,13 +165,14 @@ def main():
                 cg.go(p1, p2)
                 break
             if intersection:
-                dr.stop()
+                #dr.stop()
+                dr.avancer(0)
                 resultat = inter.gestion_intersection(frame)
                 if resultat is not None:
                     p1 = resultat['centre']
                     p2 = resultat['direction finale'][0]
                     print('intersection détecter!')
-                    #print(f'{p1=},{p2=}')
+                    print(f'{p1=},{p2=}')
                     cg.go(p1, p2)
                     #remettre en suivi
                 else:
@@ -183,7 +182,6 @@ def main():
     except KeyboardInterrupt:
         print("on est partis !!!!")
         pass
-    
     finally:
         enregistrement.stop()
         detection_intersection = False
