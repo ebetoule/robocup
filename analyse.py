@@ -20,9 +20,9 @@ def detectligne(frame):
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([180, 250, 70])
     mask = cv2.inRange(hsv, lower_black, upper_black)
-    #kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)   # enlève petits points
-    mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel, iterations=1) # reconnecte un peu
+    kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=9)   # enlève petits points
+    mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel, iterations=9) # reconnecte un peu
     #mask = ((frame < 50).all(axis=2)*255).astype('uint8')
     return mask
 
