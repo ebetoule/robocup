@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import click_and_go as cg
 
 def draw_result(frame, result):
     if result is not None:
@@ -20,8 +21,8 @@ def detectligne(frame):
     upper_black = np.array([180, 250, 70])
     mask = cv2.inRange(hsv, lower_black, upper_black)
     #kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
-    #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)   # enlève petits points
-    #mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel, iterations=1) # reconnecte un peu
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)   # enlève petits points
+    mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel, iterations=1) # reconnecte un peu
     #mask = ((frame < 50).all(axis=2)*255).astype('uint8')
     return mask
 
@@ -254,8 +255,18 @@ def ligne_droite(frame):
                 M = cv2.moments(data)
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
-                if cx is not None:
-                    return cx, cy
+                print(f'{cx=},{cy=}')
+                x1, y1 = cg.image2damier(cx, cy)
+                print(f'{x1=},{y1=}')
+                angle = np.degrees(np.arctan2(y1, x1))
+                print(f'{angle=}')
+                # Est-ce que la ligne est en face
+                if angle > 70 and angle < 110:
+                    x,y,w,h = cv2.boundingRect(data)
+                    print(f'{x=}, {y=}, {w=}, {h=}')
+                    # Est-ce qu'elle a la bonne orientation
+                    if w < 150:
+                        return (x+w/2, y+h), (x+w/2, y)
         except Exception as E:
             print(E)
     return None
@@ -400,46 +411,46 @@ if __name__ == '__main__':
 #     plt.imshow(mask3)
     
     
-    # test de detectdroite
-    plt.figure('detectdroite')
-    imgl, lines = detectdroite(img)
-    plt.imshow(drawsegments(lines, imgl))
-    
-    #test de groupir
-#     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
-#     pt1, pt2 = lines2segments(thetacenters, rcenters)
-#     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
-    
-    #test des directions:
-    thetagroup, rgroup = groupir2(lines, img)
-    x, y = centre_inter(thetagroup, rgroup)
-    print(x, y)
-    mask2 = draw_centre_inter(img, x, y)
-    plt.figure('centre')
-    plt.imshow(mask2)
-    dct1 = directions(thetagroup, rgroup)
-    mask1 = draw_directions(dct1, img.copy(), (x, y))
-    plt.figure('directions')
-    plt.imshow(mask1)
-    #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
-    dct = directions_possible(img, thetagroup, rgroup)
-#    draw_direction_possibles(imgp, (int(x), int(y)), dct)
-#     directionl = direction_à_prendre(dct, (x, y))
+#     # test de detectdroite
+#     plt.figure('detectdroite')
+#     imgl, lines = detectdroite(img)
+#     plt.imshow(drawsegments(lines, imgl))
+#     
+#     #test de groupir
+# #     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
+# #     pt1, pt2 = lines2segments(thetacenters, rcenters)
+# #     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
+#     
+#     #test des directions:
+#     thetagroup, rgroup = groupir2(lines, img)
+#     x, y = centre_inter(thetagroup, rgroup)
+#     print(x, y)
+#     mask2 = draw_centre_inter(img, x, y)
+#     plt.figure('centre')
+#     plt.imshow(mask2)
+#     dct1 = directions(thetagroup, rgroup)
+#     mask1 = draw_directions(dct1, img.copy(), (x, y))
 #     plt.figure('directions')
-#     plt.imshow(imgp)
-#     print(directionl)
-    # test des carre:
-    carrebon = carre_bon(img, (x, y))
-    #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
-    
-    # test direction avec carre:
-#     directionc = direction_carre(carrebon, (x, y))
-#     print(directionc)
-#     import intersections
-    directionf = direction_finale(carrebon, dct, (x, y))
-    print('direction finale = ', directionf)
-    plt.figure('direction finale')
-    plt.imshow(draw_direction_finale(directionf, (x, y), img))
+#     plt.imshow(mask1)
+#     #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
+#     dct = directions_possible(img, thetagroup, rgroup)
+# #    draw_direction_possibles(imgp, (int(x), int(y)), dct)
+# #     directionl = direction_à_prendre(dct, (x, y))
+# #     plt.figure('directions')
+# #     plt.imshow(imgp)
+# #     print(directionl)
+#     # test des carre:
+#     carrebon = carre_bon(img, (x, y))
+#     #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
+#     
+#     # test direction avec carre:
+# #     directionc = direction_carre(carrebon, (x, y))
+# #     print(directionc)
+# #     import intersections
+#     directionf = direction_finale(carrebon, dct, (x, y))
+#     print('direction finale = ', directionf)
+#     plt.figure('direction finale')
+#     plt.imshow(draw_direction_finale(directionf, (x, y), img))
 #     resultat = intersections.gestion_intersection(img)
     #test de groupir2
 #     plt.figure('groups')
