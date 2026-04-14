@@ -387,17 +387,17 @@ if __name__ == '__main__':
     mask = detectligne(img)
     plt.imshow(mask)
     valeurs_hsv(img)
-#     #test de detect_vert:
-#     plt.figure('vert')
-#     mask2 = detectvert(img)
-#     plt.imshow(mask2)
+     #test de detect_vert:
+    plt.figure('vert')
+    mask3 = detectvert(img)
+    plt.imshow(mask3)
     
-#     mask3, carre = detectcarre(img)
-#     mask3 = draw_carre(carre, img)
-#     #print(contours)
-#     #drawsegments(contours, img, color=(0,0,255))
-#     plt.figure('contours')
-#     plt.imshow(mask3)
+    mask4, carre = detectcarre(img)
+    mask4 = draw_carre(carre, img)
+    #print(contours)
+    #drawsegments(contours, img, color=(0,0,255))
+    plt.figure('contours')
+    plt.imshow(mask4)
     
     
     # test de detectdroite
@@ -406,12 +406,14 @@ if __name__ == '__main__':
     plt.imshow(drawsegments(lines, imgl))
     
     #test de groupir
-#     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
-#     pt1, pt2 = lines2segments(thetacenters, rcenters)
-#     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
+#    thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
+    
     
     #test des directions:
     thetagroup, rgroup = groupir2(lines, img)
+    #pt1, pt2 = lines2segments(thetagroup, rgroup)
+    plt.figure('groupir')
+    plt.imshow(drawdroites(thetagroup, rgroup, img))
     x, y = centre_inter(thetagroup, rgroup)
     print(x, y)
     mask2 = draw_centre_inter(img, x, y)
