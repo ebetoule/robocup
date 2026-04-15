@@ -163,6 +163,7 @@ def main():
                 p1 = analyse.detectfin(frame.copy())
                 p2 = p1
                 cg.go(p1, p2)
+                demarrage.en_marche = False
                 break
             if intersection:
                 #dr.stop()
