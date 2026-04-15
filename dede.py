@@ -20,10 +20,12 @@ lock = threading.Lock()
 #vitesse = 0.4
 vitesse = 100
 intersection = False
-fin = False
 detection_intersection = True
+fin = False
 
 def commencer():
+    global detection_intersection
+    detection_intersection = True
     ana_thread = threading.Thread(target=detecter, daemon=True)
     ana_thread.start()
 
@@ -34,6 +36,7 @@ def detecter():
             framecopy = frame.copy()
         fin1 = analyse.detectfin(framecopy)
         if fin1 is not None and fin1[1] > 300: 
+            print('fin detectée')
             fin = True
         theta3, x, y, _, _, _ = inter.detect_inter(framecopy)
         #print(theta3)
@@ -45,6 +48,7 @@ def detecter():
         else:
             intersection = False
             #print("on a pas d'intersection")
+    print('detection arrềtée')
 
 def temps():
     global last
@@ -134,9 +138,10 @@ etats = {'suivi' : suivi,
          }
     
 def main():
-    global last, frame
+    global last, frame, fin, detection_intersection
     picam2 = camera.init_pycam()#initialisation de la caméra 
     write = True
+    fin = False
     durees_execution = []
     running = True
     nbfois = 0
@@ -146,7 +151,10 @@ def main():
                     'angle recherche': 0,
                     'tour' : 0,
                     }
-    frame = picam2.capture_array()
+    for i in range(10):
+        frame = picam2.capture_array()
+    print(f'AHAH {fin}: {analyse.detectfin(frame)}')
+
     if write:
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
     dr.demarrer()
@@ -164,6 +172,7 @@ def main():
                 p2 = p1
                 cg.go(p1, p2)
                 demarrage.en_marche = False
+                fin = False
                 break
             if intersection:
                 #dr.stop()
@@ -187,7 +196,8 @@ def main():
         enregistrement.stop()
         detection_intersection = False
         dr.stop()
-        print(f'moyenne:{np.mean(np.array(durees_execution)[1:]):.2f},max:{np.max(np.array(durees_execution)[1:]):.2f}, min:{np.min(np.array(durees_execution)[1:]):.2f}')
+        if len(durees_execution) > 1:
+            print(f'moyenne:{np.mean(np.array(durees_execution)[1:]):.2f},max:{np.max(np.array(durees_execution)[1:]):.2f}, min:{np.min(np.array(durees_execution)[1:]):.2f}')
         picam2.close()
 
 if __name__ == '__main__':
