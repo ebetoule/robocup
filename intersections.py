@@ -46,6 +46,7 @@ def detect_inter(img):
 
 def gestion_intersection(img):
     theta3, x, y, thetagroup, rgroup, lines = detect_inter(img)
+    fin = analyse.detectfin(img)
     if theta3 is not None:
         dct = analyse.directions_possible(img, thetagroup, rgroup)
         carrebon = analyse.carre_bon(img, (x, y))
@@ -59,7 +60,8 @@ def gestion_intersection(img):
                     'directions': dct,
                     'lines': lines,
                     'r': rgroup,
-                    'theta': thetagroup}
+                    'theta': thetagroup,
+                    'fin': fin}
         else:
             return None
     else:
@@ -234,7 +236,7 @@ def centers2lines(thetacenters, rcenters, nbline):
         return pt1, pt2, 0, 0
 
 if __name__ == '__main__':
-    filename = "/home/eloise/monpi/robocup/04-14-2026_13-14-01.mp4"
+    filename = "/home/eloise/Documents/Informatique/Python/robocup/04-15-2026_14-10-55.mp4"#"/home/eloise/monpi/robocup/04-14-2026_21-24-17.mp4"
     video = cv2.VideoCapture(filename)#(input_dir + filename)
     if (video.isOpened() == False):
         print("Error opening the video file")
@@ -250,8 +252,10 @@ if __name__ == '__main__':
                 frame = tempframe
                 barycentre = get_barycentre(frame, -5)
                 resultat = gestion_intersection(frame)
+                fin = analyse.detectfin(frame)
                 frame_analysé = analyse.draw_barycentre(frame,barycentre)
                 frame_analysé = analyse.draw_result(frame_analysé, resultat)
+                frame_analysé = analyse.draw_fin(frame_analysé, fin)
                 print(resultat)
                 #print(theta3)
                 # les dessiner sur cdst

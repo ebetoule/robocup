@@ -9,6 +9,7 @@ def draw_result(frame, result):
         img_ana = draw_direction_possibles(img_ana, result['centre'], result['directions'])
         img_ana = draw_direction_finale(result['direction finale'], result['centre'], img_ana)
         img_ana = drawsegments(result['lines'], img_ana, color=(0,0,255))
+        img_ana = draw_fin(img_ana, result['fin'])
         #print(result['direction finale'])
         return img_ana
     return frame
@@ -124,9 +125,9 @@ def valeurs_hsv(frame):
     
 def detectrouge(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_red1 = np.array([0, 200, 200])
+    lower_red1 = np.array([0, 200, 50])
     upper_red1 = np.array([10, 255, 255])
-    lower_red2 = np.array([170, 200, 200])
+    lower_red2 = np.array([170, 200, 50])
     upper_red2 = np.array([180, 255, 255])
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
     mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
@@ -147,7 +148,12 @@ def detectfin(frame):
         except Exception as E:
             print(E)
     return None
-    
+
+def draw_fin(img, centre):
+    mask = img.copy()
+    if centre is not None:
+        cv2.circle(mask, (centre), 10, (255,255,255), -1)
+    return mask
 
 def detectvert(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -232,6 +238,15 @@ def draw_barycentre(frame, barycentre):
     else:
         return frame
 
+def longueur_ligne(ligne):
+    x1 = ligne[0][0]
+    y1 = ligne[0][1]
+    x2 = ligne[0][2]
+    y2 = ligne[0][3]
+    carre = (x2 - x1)**2 + (y2-y1)**2
+    longueur = np.sqrt(carre)
+    return longueur
+
 def detectdroite(frame):
     """ Prend l'image traitée et applique la transformation de ouaf pour
     avoir une liste de lignes. Si on veut dessiner, on met draw = True"""
@@ -242,7 +257,13 @@ def detectdroite(frame):
     dst = cv2.Canny(mask, 85, 90, apertureSize=3)
     imgl = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
     linesP = cv2.HoughLinesP(dst, rho=0.5, theta=2*np.pi / 180, threshold=40, minLineLength=40, maxLineGap=30)
-    return  imgl, linesP
+    lines = []
+    if linesP is not None:
+        for ligne in linesP:
+            longueur = longueur_ligne(ligne)
+            if int(longueur) > 150:
+                lines.append(ligne)
+    return  imgl, lines
 
 def ligne_droite(frame):
     mask = detectligne(frame)
@@ -412,36 +433,45 @@ if __name__ == '__main__':
         
 
 #     # test de detectdroite
-#     plt.figure('detectdroite')
-#     imgl, lines = detectdroite(img)
-#     plt.imshow(drawsegments(lines, imgl))
-#     
-#     #test de groupir
-# #     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
-# #     pt1, pt2 = lines2segments(thetacenters, rcenters)
-# #     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
-#     
-#     #test des directions:
-#     thetagroup, rgroup = groupir2(lines, img)
-#     x, y = centre_inter(thetagroup, rgroup)
-#     print(x, y)
-#     mask2 = draw_centre_inter(img, x, y)
-#     plt.figure('centre')
-#     plt.imshow(mask2)
-#     dct1 = directions(thetagroup, rgroup)
-#     mask1 = draw_directions(dct1, img.copy(), (x, y))
+    plt.figure('detectdroite')
+    imgl, lines = detectdroite(img)
+    plt.imshow(drawsegments(lines, imgl))
+    
+    #test de groupir
+#     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
+#     pt1, pt2 = lines2segments(thetacenters, rcenters)
+#     plt.imshow(drawdroites(thetacenters, rcenters, imgl))
+#     test de detctfin
+#     plt.figure('rouge')
+#     mask7 = detectrouge(img)
+#     plt.imshow(mask7)
+#     plt.figure('fin')
+#     centre = detectfin(img)
+#     mask8 = draw_fin(img, centre)
+#     plt.imshow(mask8)
+
+
+    #test des directions:
+    thetagroup, rgroup = groupir2(lines, img)
+    x, y = centre_inter(thetagroup, rgroup)
+    print(x, y)
+    mask2 = draw_centre_inter(img, x, y)
+    plt.figure('centre')
+    plt.imshow(mask2)
+    dct1 = directions(thetagroup, rgroup)
+    mask1 = draw_directions(dct1, img.copy(), (x, y))
+    plt.figure('directions')
+    plt.imshow(mask1)
+    #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
+    dct = directions_possible(img, thetagroup, rgroup)
+#    draw_direction_possibles(imgp, (int(x), int(y)), dct)
+#     directionl = direction_à_prendre(dct, (x, y))
 #     plt.figure('directions')
-#     plt.imshow(mask1)
-#     #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
-#     dct = directions_possible(img, thetagroup, rgroup)
-# #    draw_direction_possibles(imgp, (int(x), int(y)), dct)
-# #     directionl = direction_à_prendre(dct, (x, y))
-# #     plt.figure('directions')
-# #     plt.imshow(imgp)
-# #     print(directionl)
-#     # test des carre:
-#     carrebon = carre_bon(img, (x, y))
-#     #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
+#     plt.imshow(imgp)
+#     print(directionl)
+    # test des carre:
+    carrebon = carre_bon(img, (x, y))
+    #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
 #     
 #     # test direction avec carre:
 # #     directionc = direction_carre(carrebon, (x, y))
