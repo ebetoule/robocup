@@ -1,5 +1,10 @@
 # Robocup
 
+## Contexte
+Notre équipe a un site web que vous pouvez consulter [ici](https://robacotfrancois1er.wixsite.com/team-robacot)
+
+Et voici notre [chaine youtube](https://www.youtube.com/@Team-Robacot)
+
 ## Structure du projet
 
 ### Modules principaux
