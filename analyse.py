@@ -472,17 +472,18 @@ if __name__ == '__main__':
     # test des carre:
     carrebon = carre_bon(img, (x, y))
     #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
-#     
-#     # test direction avec carre:
-# #     directionc = direction_carre(carrebon, (x, y))
-# #     print(directionc)
-# #     import intersections
-#     directionf = direction_finale(carrebon, dct, (x, y))
-#     print('direction finale = ', directionf)
-#     plt.figure('direction finale')
-#     plt.imshow(draw_direction_finale(directionf, (x, y), img))
-#     resultat = intersections.gestion_intersection(img)
-    #test de groupir2
+    
+    # test direction avec carre:
+#     directionc = direction_carre(carrebon, (x, y))
+#     print(directionc)
+#     import intersections
+    directionf = direction_finale(carrebon, dct, (x, y))
+    print('direction finale = ', directionf)
+    plt.figure('direction finale')
+    plt.imshow(draw_direction_finale(directionf, (x, y), img))
+    resultat = intersections.gestion_intersection(img)
+
+#test de groupir2
 #     plt.figure('groups')
 #     imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
 #     plt.figure('groupir2')

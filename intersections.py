@@ -236,7 +236,7 @@ def centers2lines(thetacenters, rcenters, nbline):
         return pt1, pt2, 0, 0
 
 if __name__ == '__main__':
-    filename = "/home/eloise/Documents/Informatique/Python/robocup/04-15-2026_14-10-55.mp4"#"/home/eloise/monpi/robocup/04-14-2026_21-24-17.mp4"
+    filename = "/home/eloise/monpi/robocup/last.mp4"#"/home/eloise/Documents/Informatique/Python/robocup/last.mp4"#
     video = cv2.VideoCapture(filename)#(input_dir + filename)
     if (video.isOpened() == False):
         print("Error opening the video file")

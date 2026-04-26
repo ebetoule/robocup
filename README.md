@@ -1,14 +1,19 @@
-# robocup
+# Robocup
 
 ## Structure du projet
 
 ### Modules principaux
 
+- dede.py : PROGRAMME PRINCIPAL
 - camera.py  : initialisation de la caméra
 - click_and_go.py : affiche une image, se déplace au point sur lequel on double clic
 - enregistrement.py : enregistrement d'une video dans un second thread + avance en fonction des entrées clavier (curses)
 - intersections.py : détection et affichage des lignes sur une image
-- ligne_droite_spike2.py: PROGRAMME PRINCIPAL suivi d'une ligne avec enregistrement de la trajectoire 
+- analyse.py : traitement de l'image et affichage des différentes étapes du processus
+- demarrage.py : capte les informations envoyées par la microbit et renvoie la variable en_marche
+- deplacements_robot.py : fonctions de déplacements du robot
+- ligne_droite_spike2.py: ancien programme suivi d'une ligne avec enregistrement de la trajectoire
+
 
 ### Programmes de tests
 
@@ -32,20 +37,10 @@
   - enregistrement.py : enregistrement d'une video dans un second thread
   - enregistrement_maitrise.py: idem + avance en fonction des entrées clavier (avec input: ne fonctionne pas)
 
-  
-  
-## TODO
-
-- [ ] supprimer le répertoire data
-- [ ] déplacer le répertoire Barycentre dans tutoriels
-- [ ] déplacer le programme calibre.py dans le répertoire chess
-- [ ] supprimer le programme p1.py
-- [ ] déplacer prise_image.py dans chess
-- [ ] déplacer test_curses.py et test_pynput.py et video_lecture.py dans tutoriels
-
 
 ## Journal
 
 - Janvier: suivi de ligne avec la caméra (barycentre), controle des moteurs pour prendre des videos de tests
 - Fevrier: détection des lignes, se rendre à un point donné (click and go)
-- Mars: calcul des intersections 
+- Mars: calcul des intersections et analyse avec opencv
+- Avril: finalisation du suivi de ligne + compétition régionale
