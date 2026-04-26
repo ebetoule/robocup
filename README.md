@@ -3,7 +3,7 @@
 ## Contexte
 Notre équipe a un site web que vous pouvez consulter [ici](https://robacotfrancois1er.wixsite.com/team-robacot)
 
-[image](robot.jpg "Robot de développement")
+![image](robot.jpg "Robot de développement")
 
 Et voici notre [chaine youtube](https://www.youtube.com/@Team-Robacot)
 
