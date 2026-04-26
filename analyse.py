@@ -19,7 +19,7 @@ def detectligne(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     #denoised = cv2.medianBlur(hsv, 5)
     lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 250, 70])
+    upper_black = np.array([180, 250, 90])
     mask = cv2.inRange(hsv, lower_black, upper_black)
     kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=9)   # enlève petits points
@@ -261,7 +261,7 @@ def detectdroite(frame):
     if linesP is not None:
         for ligne in linesP:
             longueur = longueur_ligne(ligne)
-            if int(longueur) > 150:
+            if int(longueur) > 100:
                 lines.append(ligne)
     return  imgl, lines
 
