@@ -4,10 +4,11 @@ from calibration import objpoints
 # from buildhat import Motor
 # motor_right = Motor('A')
 # motor_left = Motor('B')
-imgpoints = np.array([[151., 384.],
-                       [494., 386.],
-                       [137.,  58.],
-                       [510.,  58.]], dtype="float32")
+imgpoints = np.array([[137., 356.],
+                     [468., 359.],
+                     [119.,  56.],
+                     [485.,  51.]], dtype="float32")
+
 
 # objpoints = np.array([
 #     [-4, 13],
@@ -37,9 +38,11 @@ def obtenir_coord(action, x, y, flags, userdata):
         if nbfois == 2:
             go((x1, y1), (x, y))
             nbfois = 1
+            print('bon pour le point 2')
         elif nbfois == 1:
             x1, y1 = x, y
             nbfois = nbfois + 1
+            print('bon pour le point 1')
 
 def go(p1, p2):
     import deplacements_robot as dr

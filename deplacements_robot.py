@@ -3,8 +3,8 @@ import time
 import numpy as np
 vitesse = 150
 
-motor_right = Motor('C')
-motor_left = Motor('D')
+motor_right = Motor('B')
+motor_left = Motor('A')
 
 vitesses = {'droit': 0,
             'gauche': 0}
