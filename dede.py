@@ -139,7 +139,7 @@ etats = {'suivi' : suivi,
     
 def main():
     global last, frame, fin, detection_intersection
-    picam2 = camera.init_pycam()#initialisation de la caméra 
+    picam2 = camera.init_pycam()#initialisation de la caméra
     write = True
     fin = False
     durees_execution = []
@@ -157,6 +157,7 @@ def main():
 
     if write:
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
+        print('bon pour l enregistrement')
     dr.demarrer()
     commencer()
     last = time.time()
@@ -164,7 +165,7 @@ def main():
         while demarrage.en_marche:
             durees_execution.append(temps())
             with lock:
-                frame = picam2.capture_array() #prise de l'image qui va être traitée
+                frame = picam2.capture_array()#prise de l'image qui va être traitée
             etat_courant = etats[etat_courant['etat']](frame, etat_courant)
             if fin:
                 print('fin du parcours')
@@ -189,11 +190,13 @@ def main():
                     pass
             if write:
                 enregistrement.ajouter(frame)#ajouter l'image dans le film
+                print('cest bon')
     except KeyboardInterrupt:
         print("on est partis !!!!")
         pass
     finally:
         enregistrement.stop()
+        print('tout est arrêté')
         detection_intersection = False
         dr.stop()
         if len(durees_execution) > 1:

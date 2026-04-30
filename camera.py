@@ -36,7 +36,7 @@ if __name__=="__main__":
 
         #cv2.imshow('', frame)
         #plt.imshow(frame)
-        cv2.imwrite('ccn7.jpg',frame)
+        cv2.imwrite('essain.jpg',frame)
         #cv2.imshow('ccn', frame)
         picam2.stop()
 
