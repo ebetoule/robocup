@@ -4,10 +4,13 @@ from calibration import objpoints
 # from buildhat import Motor
 # motor_right = Motor('A')
 # motor_left = Motor('B')
-imgpoints = np.array([[137., 356.],
-                     [468., 359.],
-                     [119.,  56.],
-                     [485.,  51.]], dtype="float32")
+imgpoints = np.array([[123., 413.],
+                     [482., 419.],
+                     [124.,  76.],
+                     [487.,  97.]], dtype="float32")
+
+
+
 
 
 # objpoints = np.array([
@@ -49,12 +52,12 @@ def go(p1, p2):
     x1, y1 = image2damier(*p1)
     x2, y2 = image2damier(*p2)
     theta1, theta3, dist = xy2thetadist(x1, y1, x2, y2)
-    print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
-    print(f'tourner {-theta1}')
+    #print(f'A = ({x1, y1}), B = ({x2, y2}), angle = {theta1}°, distance = {dist}cm , deuxième angle = {theta3}°')
+    #print(f'tourner {-theta1}')
     dr.tourner(-theta1)
-    print(f'aller {dist}')
+    #print(f'aller {dist}')
     dr.aller(dist)
-    print(f'tourner {-theta3}')
+    #print(f'tourner {-theta3}')
     dr.tourner(-theta3)
     
 def xy2thetadist(x1, y1, x2, y2):

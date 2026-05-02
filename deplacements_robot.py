@@ -63,7 +63,7 @@ def mouvement(gauche, droit):
     cible_droite = positions['droit'] + droit
     vitesses['gauche'] = vitesse * np.sign(gauche)
     vitesses['droit'] = vitesse * np.sign(droit)
-    print(gauche, droit)
+    #print(gauche, droit)
     while vitesses['gauche'] != 0 or vitesses['droit'] != 0:
         if (cible_gauche - positions['gauche']) * np.sign(gauche) <= 0:
             vitesses['gauche'] = 0
@@ -72,9 +72,22 @@ def mouvement(gauche, droit):
             vitesses['droit'] = 0
             cibles['droit'] = cible_droite
         time.sleep(0.001)
-    print(cible_gauche - positions['gauche'], cible_droite - positions['droit'])
+    #print(cible_gauche - positions['gauche'], cible_droite - positions['droit'])
     
-        
+def passage_obstacle():
+    print('depassement1')
+    tourner(-60)
+    print('depassement2')
+    aller(20)
+    print('depassement3')
+    tourner(60)
+    print('depassement4')
+    aller(10)
+    print('depassement5')
+    tourner(60)
+    aller(20)
+    tourner(-60)
+    
 def passage_inter(theta1, theta2, dist):
     tourner(theta1)
     aller(dist)

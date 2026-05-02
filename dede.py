@@ -14,14 +14,28 @@ import deplacements_robot as dr
 import enregistrement
 import click_and_go as cg
 import demarrage
+from buildhat import DistanceSensor
 
 lock = threading.Lock()
 
 #vitesse = 0.4
+dist = DistanceSensor('D', threshold_distance=100)
 vitesse = 100
 intersection = False
 detection_intersection = True
 fin = False
+obstacle = False
+
+def detect_obstacle():
+    global obstacle
+    distance = dist.get_distance()
+    print('distance', distance)
+    if distance == -1:
+        obstacle = False
+    elif distance <= 50:
+        obstacle = True
+    else:
+        obstacle = False
 
 def commencer():
     global detection_intersection
@@ -36,7 +50,7 @@ def detecter():
             framecopy = frame.copy()
         fin1 = analyse.detectfin(framecopy)
         if fin1 is not None and fin1[1] > 300: 
-            print('fin detectée')
+            #print('fin detectée')
             fin = True
         theta3, x, y, _, _, _ = inter.detect_inter(framecopy)
         #print(theta3)
@@ -48,7 +62,6 @@ def detecter():
         else:
             intersection = False
             #print("on a pas d'intersection")
-    print('detection arrềtée')
 
 def temps():
     global last
@@ -64,7 +77,7 @@ def perte_de_la_ligne(frame, etat_courant):
     ligne = analyse.ligne_droite(frame)
     if ligne is not None :
         p1, p2 = ligne
-        print(f'{p1=},{p2=}')
+        #print(f'{p1=},{p2=}')
         cg.go(p1, p2)
         etat_courant['etat'] = 'suivi'
         return etat_courant
@@ -82,29 +95,29 @@ def recherche(frame, etat_courant):
     dernier = etat_courant['barycentre']
     pas = 5
     if avant < dernier:
-        print('à gauche')
+        #print('à gauche')
         if etat_courant['tour'] == 0:
-            print('tour 0')
+            #print('tour 0')
             dr.tourner(-pas)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-pas)
             if etat_courant['angle recherche'] < -90:
                 etat_courant['tour'] = 1
         else:
-            print('tour 1')
+            #print('tour 1')
             dr.tourner(pas)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + pas
             if etat_courant['angle recherche'] > 90:
                 etat_courant['tour'] = 0
     else:
-        print('à droite')
+        #print('à droite')
         if etat_courant['tour'] == 0:
-            print('tour 0')
+            #print('tour 0')
             dr.tourner(pas)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + pas
             if etat_courant['angle recherche'] > 90:
                 etat_courant['tour'] = 1
         else:
-            print('tour 1')
+            #print('tour 1')
             dr.tourner(-pas)
             etat_courant['angle recherche'] = etat_courant['angle recherche'] + (-pas)
             if etat_courant['angle recherche'] < -90:
@@ -123,11 +136,11 @@ def suivi(frame, etat_courant):
 
     difference = 640 / 2 - barycentre
     if difference >= 0 :
-        print("à gauche")
+        #print("à gauche")
         dr.droit(vitesse)
         dr.gauche(vitesse + (-2 * vitesse/200)*difference)
     if difference < 0 :
-        print("à droite")
+        #print("à droite")
         dr.gauche(vitesse)
         dr.droit(vitesse + (2 * vitesse/200)*difference)
     return etat_courant
@@ -138,7 +151,7 @@ etats = {'suivi' : suivi,
          }
     
 def main():
-    global last, frame, fin, detection_intersection
+    global last, frame, fin, detection_intersection, obstacle
     picam2 = camera.init_pycam()#initialisation de la caméra
     write = True
     fin = False
@@ -153,11 +166,9 @@ def main():
                     }
     for i in range(10):
         frame = picam2.capture_array()
-    print(f'AHAH {fin}: {analyse.detectfin(frame)}')
 
     if write:
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
-        print('bon pour l enregistrement')
     dr.demarrer()
     commencer()
     last = time.time()
@@ -167,6 +178,10 @@ def main():
             with lock:
                 frame = picam2.capture_array()#prise de l'image qui va être traitée
             etat_courant = etats[etat_courant['etat']](frame, etat_courant)
+            detect_obstacle()
+            if obstacle:
+                print('obstacle détecté')
+                dr.passage_obstacle()
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(frame.copy())
@@ -182,21 +197,18 @@ def main():
                 if resultat is not None:
                     p1 = resultat['centre']
                     p2 = resultat['direction finale'][0]
-                    print('intersection détecter!')
-                    print(f'{p1=},{p2=}')
+                    print('intersection détectée!')
                     cg.go(p1, p2)
                     #remettre en suivi
                 else:
                     pass
             if write:
                 enregistrement.ajouter(frame)#ajouter l'image dans le film
-                print('cest bon')
     except KeyboardInterrupt:
         print("on est partis !!!!")
         pass
     finally:
         enregistrement.stop()
-        print('tout est arrêté')
         detection_intersection = False
         dr.stop()
         if len(durees_execution) > 1:

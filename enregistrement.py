@@ -18,13 +18,13 @@ frame_queue = queue.Queue(maxsize = 10)
 def recording_thread(q, nom, fps=15, size=size):
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec efficace
     writer = cv2.VideoWriter(nom, fourcc, fps, size)#(width, height))
-    print("debut de l'enregistrement")
+    #print("debut de l'enregistrement")
     nframe = 0
     while True:
         nframe += 1
         frame = q.get()
         if frame is None:  # Signal de fin
-            print(f"Arret de l'enregistrement apres {nframe} images")
+            #print(f"Arret de l'enregistrement apres {nframe} images")
             break
         # Resize pour réduire la taille (optionnel)
         #frame = cv2.resize(frame, (width, height))

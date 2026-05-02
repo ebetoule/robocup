@@ -276,15 +276,15 @@ def ligne_droite(frame):
                 M = cv2.moments(data)
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
-                print(f'{cx=},{cy=}')
+                #print(f'{cx=},{cy=}')
                 x1, y1 = cg.image2damier(cx, cy)
-                print(f'{x1=},{y1=}')
+                #print(f'{x1=},{y1=}')
                 angle = np.degrees(np.arctan2(y1, x1))
-                print(f'{angle=}')
+                #print(f'{angle=}')
                 # Est-ce que la ligne est en face
                 if angle > 70 and angle < 110:
                     x,y,w,h = cv2.boundingRect(data)
-                    print(f'{x=}, {y=}, {w=}, {h=}')
+                    #print(f'{x=}, {y=}, {w=}, {h=}')
                     # Est-ce qu'elle a la bonne orientation
                     if w < 150:
                         return (x+w/2, y+h), (x+w/2, y)

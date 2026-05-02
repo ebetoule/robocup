@@ -14,10 +14,10 @@ imgpoints = np.array([
 
 
 objpoints = np.array([
-    [-3, 11],
-    [3, 11],
-    [-7, 25.],
-    [7,25],
+    [-3, 15],
+    [3, 15],
+    [-7, 29.],
+    [7,29],
     ], dtype="float32")
 compteur = 0
 
