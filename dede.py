@@ -20,7 +20,7 @@ lock = threading.Lock()
 
 #vitesse = 0.4
 dist = DistanceSensor('D', threshold_distance=100)
-vitesse = 100
+vitesse = 180
 intersection = False
 detection_intersection = True
 fin = False
