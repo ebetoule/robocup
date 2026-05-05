@@ -14,10 +14,21 @@ def draw_result(frame, result):
         return img_ana
     return frame
 
+def detect_argent(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lower_black = np.array([0, 0, 0])
+    upper_black = np.array([180, 250, 90])
+    mask1 = cv2.inRange(hsv, lower_black, upper_black)
+    lower_white = np.array([0,0,150])
+    upper_white = np.array([180,30,255])
+    mask2 = cv2.inRange(hsv, lower_white, upper_white)
+    mask3 = cv2.bitwise_or(mask1, mask2)   # Noir OU Blanc
+    mask4 = cv2.bitwise_not(mask3)
+    return mask4
+    
 def detectligne(frame):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    #denoised = cv2.medianBlur(hsv, 5)
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([180, 250, 90])
     mask = cv2.inRange(hsv, lower_black, upper_black)
