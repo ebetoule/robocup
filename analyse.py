@@ -35,10 +35,13 @@ def entree(frame):
     mask = detect_argent(frame)
     frame2 = frame.copy()
     contours,hierarchy = cv2.findContours(mask, 1, 2)
-    bb = []
     for data in contours:
         try:
+            bb = [] 
             rect = cv2.minAreaRect(data)
+            M = cv2.moments(data)
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
             box = cv2.boxPoints(rect)
             box = np.intp(box)
             cv2.drawContours(frame2,[box],0,(0,0,255),2)
@@ -48,7 +51,7 @@ def entree(frame):
             l1 = longueur_ligne([bb[0] + bb[1]])
             l2 = longueur_ligne([bb[1] + bb[2]])
             aire = l1 * l2
-            return aire
+            return aire, cx, cy
         except Exception as E:
             print(E)
     return None
@@ -453,10 +456,10 @@ if __name__ == '__main__':
     #plt.imshow(img)
     
     # test de détectligne
-    plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
-    mask = detectligne(img)
-    plt.imshow(mask)
-    valeurs_hsv(img)
+#     plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
+#     mask = detectligne(img)
+#     plt.imshow(mask)
+#     valeurs_hsv(img)
 #      #test de detect_vert:
 #     plt.figure('vert')
 #     mask2 = detectvert(img)
@@ -471,9 +474,9 @@ if __name__ == '__main__':
         
 
 #     # test de detectdroite
-    plt.figure('detectdroite')
-    imgl, lines = detectdroite(img)
-    plt.imshow(drawsegments(lines, imgl))
+#     plt.figure('detectdroite')
+#     imgl, lines = detectdroite(img)
+#     plt.imshow(drawsegments(lines, imgl))
     
     #test de groupir
 #     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
@@ -490,25 +493,25 @@ if __name__ == '__main__':
 
 
     #test des directions:
-    thetagroup, rgroup = groupir2(lines, img)
-    x, y = centre_inter(thetagroup, rgroup)
-    print(x, y)
-    mask2 = draw_centre_inter(img, x, y)
-    plt.figure('centre')
-    plt.imshow(mask2)
-    dct1 = directions(thetagroup, rgroup)
-    mask1 = draw_directions(dct1, img.copy(), (x, y))
-    plt.figure('directions')
-    plt.imshow(mask1)
-    #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
-    dct = directions_possible(img, thetagroup, rgroup)
+#     thetagroup, rgroup = groupir2(lines, img)
+#     x, y = centre_inter(thetagroup, rgroup)
+#     print(x, y)
+#     mask2 = draw_centre_inter(img, x, y)
+#     plt.figure('centre')
+#     plt.imshow(mask2)
+#     dct1 = directions(thetagroup, rgroup)
+#     mask1 = draw_directions(dct1, img.copy(), (x, y))
+#     plt.figure('directions')
+#     plt.imshow(mask1)
+#     #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
+#     dct = directions_possible(img, thetagroup, rgroup)
 #    draw_direction_possibles(imgp, (int(x), int(y)), dct)
 #     directionl = direction_à_prendre(dct, (x, y))
 #     plt.figure('directions')
 #     plt.imshow(imgp)
 #     print(directionl)
     # test des carre:
-    carrebon = carre_bon(img, (x, y))
+    #carrebon = carre_bon(img, (x, y))
     #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
     
     # test direction avec carre:
@@ -531,7 +534,7 @@ if __name__ == '__main__':
 #     axes[1].set_title('blanc')
 #     axes[2].imshow(ar3)
 #     axes[2].set_title('argent')
-#     coins, cadre, aire = entree(img)
+    aire, cx, cy = entree(img)
 #     print(coins)
 #     print('laire est de', aire)
 #     plt.figure('contours')

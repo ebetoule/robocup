@@ -40,11 +40,12 @@ def detect_obstacle():
     
 def detect_zone():
     global zone
-    aire = analyse.entree(frame)
-    if aire > 25:
-        zone = True
-    else:
-        zone = False
+    aire, cx, cy = analyse.entree(frame)
+    if aire is not None:
+        if aire > 25 and cy > 150:
+            zone = True
+        else:
+            zone = False
 
 def commencer():
     global detection_intersection
@@ -194,6 +195,11 @@ def main():
                 dr.passage_obstacle()
             if zone:
                 print('entrée dans la zone')
+                aire, cx, cy = analyse.entree(frame)
+                p1 = cx, cy
+                p2 = p1
+                cg.go(p1, p2)
+                print(p1, p2)
                 demarrage.en_marche = False
                 break
             if fin:
