@@ -25,6 +25,7 @@ intersection = False
 detection_intersection = True
 fin = False
 obstacle = False
+zone = False
 
 def detect_obstacle():
     global obstacle
@@ -36,6 +37,14 @@ def detect_obstacle():
         obstacle = True
     else:
         obstacle = False
+    
+def detect_zone():
+    global zone
+    aire = analyse.entree(frame)
+    if aire > 25:
+        zone = True
+    else:
+        zone = False
 
 def commencer():
     global detection_intersection
@@ -179,9 +188,14 @@ def main():
                 frame = picam2.capture_array()#prise de l'image qui va être traitée
             etat_courant = etats[etat_courant['etat']](frame, etat_courant)
             detect_obstacle()
+            detect_zone()
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()
+            if zone:
+                print('entrée dans la zone')
+                demarrage.en_marche = False
+                break
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(frame.copy())

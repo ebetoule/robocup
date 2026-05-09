@@ -16,15 +16,42 @@ def draw_result(frame, result):
 
 def detect_argent(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    kernel = np.ones((3,3), np.uint8)
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([180, 250, 50])
     mask1 = cv2.inRange(hsv, lower_black, upper_black)
-    lower_white = np.array([100,0,150])
-    upper_white = np.array([180,120,255])
+    mask1 = cv2.morphologyEx(mask1, cv2.MORPH_OPEN, kernel, iterations=6)
+    mask1 = cv2.morphologyEx(mask1, cv2.MORPH_DILATE, kernel, iterations=9)
+    lower_white = np.array([100,70,150])
+    upper_white = np.array([180,160,255])
     mask2 = cv2.inRange(hsv, lower_white, upper_white)
+    mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel, iterations=6)
+    mask2 = cv2.morphologyEx(mask2, cv2.MORPH_DILATE, kernel, iterations=9)
     mask3 = cv2.bitwise_or(mask1, mask2)   # Noir OU Blanc
     mask4 = cv2.bitwise_not(mask3)
     return mask4
+
+def entree(frame):
+    mask = detect_argent(frame)
+    frame2 = frame.copy()
+    contours,hierarchy = cv2.findContours(mask, 1, 2)
+    bb = []
+    for data in contours:
+        try:
+            rect = cv2.minAreaRect(data)
+            box = cv2.boxPoints(rect)
+            box = np.intp(box)
+            cv2.drawContours(frame2,[box],0,(0,0,255),2)
+            for i in range(len(box)):
+                x, y = cg.image2damier(box[i][0], box[i][1])
+                bb.append([x, y])
+            l1 = longueur_ligne([bb[0] + bb[1]])
+            l2 = longueur_ligne([bb[1] + bb[2]])
+            aire = l1 * l2
+            return aire
+        except Exception as E:
+            print(E)
+    return None
     
 def detectligne(frame):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
@@ -421,7 +448,7 @@ if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('test.png')
+    img = cv2.imread('argent.jpg')
     plt.ion()
     #plt.imshow(img)
     
@@ -488,12 +515,27 @@ if __name__ == '__main__':
 #     directionc = direction_carre(carrebon, (x, y))
 #     print(directionc)
 #     import intersections
-    directionf = direction_finale(carrebon, dct, (x, y))
-    print('direction finale = ', directionf)
-    plt.figure('direction finale')
-    plt.imshow(draw_direction_finale(directionf, (x, y), img))
-    resultat = intersections.gestion_intersection(img)
+#     directionf = direction_finale(carrebon, dct, (x, y))
+#     print('direction finale = ', directionf)
+#     plt.figure('direction finale')
+#     plt.imshow(draw_direction_finale(directionf, (x, y), img))
+#     resultat = intersections.gestion_intersection(img)
 
+    # test de detect argent
+#     ar1, ar2, ar3 = detect_argent(img)
+#     fig = plt.figure('argent')
+#     axes = fig.subplots(1,3)
+#     axes[0].imshow(ar1)
+#     axes[0].set_title('noir')
+#     axes[1].imshow(ar2)
+#     axes[1].set_title('blanc')
+#     axes[2].imshow(ar3)
+#     axes[2].set_title('argent')
+#     coins, cadre, aire = entree(img)
+#     print(coins)
+#     print('laire est de', aire)
+#     plt.figure('contours')
+#     plt.imshow(cadre)
 #test de groupir2
 #     plt.figure('groups')
 #     imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)
