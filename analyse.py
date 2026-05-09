@@ -30,7 +30,7 @@ def detectligne(frame):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 250, 90])
+    upper_black = np.array([180, 250, 100])
     mask = cv2.inRange(hsv, lower_black, upper_black)
     kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=9)   # enlève petits points
@@ -272,7 +272,7 @@ def detectdroite(frame):
     if linesP is not None:
         for ligne in linesP:
             longueur = longueur_ligne(ligne)
-            if int(longueur) > 100:
+            if int(longueur) > 150:
                 lines.append(ligne)
     return  imgl, lines
 

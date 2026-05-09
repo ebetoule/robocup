@@ -93,7 +93,7 @@ def recherche(frame, etat_courant):
         return etat_courant
     avant = etat_courant['précédent']
     dernier = etat_courant['barycentre']
-    pas = 5
+    pas = 10
     if avant < dernier:
         #print('à gauche')
         if etat_courant['tour'] == 0:
