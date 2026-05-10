@@ -22,19 +22,19 @@ def detect_argent(frame):
     mask1 = cv2.inRange(hsv, lower_black, upper_black)
     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_OPEN, kernel, iterations=6)
     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_DILATE, kernel, iterations=9)
-    lower_white = np.array([100,70,150])
-    upper_white = np.array([180,160,255])
+    lower_white = np.array([95,0,150])
+    upper_white = np.array([160,255,255])
     mask2 = cv2.inRange(hsv, lower_white, upper_white)
     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel, iterations=6)
     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_DILATE, kernel, iterations=9)
     mask3 = cv2.bitwise_or(mask1, mask2)   # Noir OU Blanc
     mask4 = cv2.bitwise_not(mask3)
-    return mask4
+    return mask1, mask2, mask4
 
 def entree(frame):
-    mask = detect_argent(frame)
-    frame2 = frame.copy()
-    contours,hierarchy = cv2.findContours(mask, 1, 2)
+    _, _, mask = detect_argent(frame)
+    frame2 = frame[200:480,:,:].copy()
+    contours,hierarchy = cv2.findContours(mask[200:480,:], 1, 2)
     for data in contours:
         try:
             bb = [] 
@@ -51,7 +51,7 @@ def entree(frame):
             l1 = longueur_ligne([bb[0] + bb[1]])
             l2 = longueur_ligne([bb[1] + bb[2]])
             aire = l1 * l2
-            return aire, cx, cy
+            return aire, cx, cy#, frame2#à enlever
         except Exception as E:
             print(E)
     return None
@@ -162,6 +162,19 @@ def valeurs_hsv(frame):
     for i, axe in enumerate(axes):
         axe.imshow(hsv[:,:,i])
         axe.set_title(legende[i])
+    plt.show()
+    
+def trois_masks(frame):
+    import matplotlib.pyplot as plt
+    ar1, ar2, ar3 = detect_argent(frame)
+    fig = plt.figure()
+    axes = fig.subplots(1,3)
+    axes[0].imshow(ar1)
+    axes[0].set_title('noir')
+    axes[1].imshow(ar2)
+    axes[1].set_title('blanc')
+    axes[2].imshow(ar3)
+    axes[2].set_title('argent')
     plt.show()
     
 def detectrouge(frame):
@@ -451,16 +464,20 @@ if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('argent.jpg')
+    img = cv2.imread('entre3.jpg')
+    img1 = cv2.imread('entre2.jpg')
+    img2 = cv2.imread('entree.jpg')
     plt.ion()
-    #plt.imshow(img)
+    plt.imshow(img)
     
     # test de détectligne
-#     plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
-#     mask = detectligne(img)
-#     plt.imshow(mask)
-#     valeurs_hsv(img)
-#      #test de detect_vert:
+    plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
+    mask = detectligne(img)
+    plt.imshow(mask)
+    valeurs_hsv(img)
+    valeurs_hsv(img1)
+    valeurs_hsv(img2)
+     #test de detect_vert:
 #     plt.figure('vert')
 #     mask2 = detectvert(img)
 #     plt.imshow(mask2)
@@ -525,16 +542,12 @@ if __name__ == '__main__':
 #     resultat = intersections.gestion_intersection(img)
 
     # test de detect argent
-#     ar1, ar2, ar3 = detect_argent(img)
-#     fig = plt.figure('argent')
-#     axes = fig.subplots(1,3)
-#     axes[0].imshow(ar1)
-#     axes[0].set_title('noir')
-#     axes[1].imshow(ar2)
-#     axes[1].set_title('blanc')
-#     axes[2].imshow(ar3)
-#     axes[2].set_title('argent')
-    aire, cx, cy = entree(img)
+    trois_masks(img)
+    trois_masks(img1)
+    trois_masks(img2)
+    aire, cx, cy, entre = entree(img)
+    plt.figure('entrée')
+    plt.imshow(entre)
 #     print(coins)
 #     print('laire est de', aire)
 #     plt.figure('contours')
