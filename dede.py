@@ -30,7 +30,7 @@ zone = False
 def detect_obstacle():
     global obstacle
     distance = dist.get_distance()
-    print('distance', distance)
+    #print('distance', distance)
     if distance == -1:
         obstacle = False
     elif distance <= 50:
@@ -41,8 +41,9 @@ def detect_obstacle():
 def detect_zone():
     global zone
     aire, cx, cy, _ = analyse.entree(frame)
+    print(aire, cy)
     if aire is not None:
-        if aire > 25 and cy > 250:
+        if aire > 25 and cy > 200:
             zone = True
         else:
             zone = False
@@ -94,6 +95,22 @@ def perte_de_la_ligne(frame, etat_courant):
     etat_courant['etat'] = 'recherche'
     return etat_courant
 
+def sorti():
+    sorti = False
+    with lock:
+        frame = picam2.capture_array()
+    ligne = analyse.ligne_droite(frame)
+    sorti = False
+    while not sorti:
+        if ligne is not None :
+            p1, p2 = ligne
+            #print(f'{p1=},{p2=}')
+            cg.go(p1, p2)
+            sorti = True
+        else:
+            dr.tourner(5)
+            sorti = False
+        
 def recherche(frame, etat_courant):
     print('recherche de ligne')
     barycentre = inter.get_barycentre(frame, -5)
@@ -158,6 +175,7 @@ def suivi(frame, etat_courant):
 etats = {'suivi' : suivi,
          'perte de la ligne': perte_de_la_ligne,
          'recherche' : recherche,
+         'sorti' : sorti,
          }
     
 def main():
@@ -200,6 +218,7 @@ def main():
                 p2 = p1
                 cg.go(p1, p2)
                 print(p1, p2)
+                sorti()
                 demarrage.en_marche = False
                 break
             if fin:

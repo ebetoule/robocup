@@ -22,8 +22,8 @@ def detect_argent(frame):
     mask1 = cv2.inRange(hsv, lower_black, upper_black)
     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_OPEN, kernel, iterations=6)
     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_DILATE, kernel, iterations=9)
-    lower_white = np.array([95,0,150])
-    upper_white = np.array([160,255,255])
+    lower_white = np.array([95,50,150])
+    upper_white = np.array([160,100,255])
     mask2 = cv2.inRange(hsv, lower_white, upper_white)
     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel, iterations=6)
     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_DILATE, kernel, iterations=9)
@@ -34,7 +34,7 @@ def detect_argent(frame):
 def entree(frame):
     _, _, mask = detect_argent(frame)
     frame2 = frame[200:480,:,:].copy()
-    contours,hierarchy = cv2.findContours(mask[200:480,:], 1, 2)
+    contours,hierarchy = cv2.findContours(mask, 1, 2)
     aa = 0
     airef = None
     for data in contours:
@@ -55,11 +55,13 @@ def entree(frame):
             aire = l1 * l2
             if aire > aa:
                 airef = aire
+                bcx = cx
+                bcy = cy
             aa = aire
         except Exception as E:
             print(E)
     if airef is not None:
-        return airef, cx, cy, frame2#à enlever
+        return airef, bcx, bcy, frame2#à enlever
     else:
         return None, None, None, None
     
