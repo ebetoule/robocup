@@ -35,6 +35,8 @@ def entree(frame):
     _, _, mask = detect_argent(frame)
     frame2 = frame[200:480,:,:].copy()
     contours,hierarchy = cv2.findContours(mask[200:480,:], 1, 2)
+    aa = 0
+    airef = None
     for data in contours:
         try:
             bb = [] 
@@ -51,10 +53,15 @@ def entree(frame):
             l1 = longueur_ligne([bb[0] + bb[1]])
             l2 = longueur_ligne([bb[1] + bb[2]])
             aire = l1 * l2
-            return aire, cx, cy, frame2#à enlever
+            if aire > aa:
+                airef = aire
+            aa = aire
         except Exception as E:
             print(E)
-    return None, None, None, None
+    if airef is not None:
+        return airef, cx, cy, frame2#à enlever
+    else:
+        return None, None, None, None
     
 def detectligne(frame):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
