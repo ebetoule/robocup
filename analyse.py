@@ -51,7 +51,7 @@ def entree(frame):
             l1 = longueur_ligne([bb[0] + bb[1]])
             l2 = longueur_ligne([bb[1] + bb[2]])
             aire = l1 * l2
-            return aire, cx, cy#, frame2#à enlever
+            return aire, cx, cy, frame2#à enlever
         except Exception as E:
             print(E)
     return None
@@ -464,9 +464,9 @@ if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('entre3.jpg')
-    img1 = cv2.imread('entre2.jpg')
-    img2 = cv2.imread('entree.jpg')
+    img = cv2.imread('test.png')
+    #img1 = cv2.imread('entre2.jpg')
+    #img2 = cv2.imread('entree.jpg')
     plt.ion()
     plt.imshow(img)
     
@@ -475,8 +475,8 @@ if __name__ == '__main__':
     mask = detectligne(img)
     plt.imshow(mask)
     valeurs_hsv(img)
-    valeurs_hsv(img1)
-    valeurs_hsv(img2)
+    #valeurs_hsv(img1)
+    #valeurs_hsv(img2)
      #test de detect_vert:
 #     plt.figure('vert')
 #     mask2 = detectvert(img)
@@ -543,8 +543,8 @@ if __name__ == '__main__':
 
     # test de detect argent
     trois_masks(img)
-    trois_masks(img1)
-    trois_masks(img2)
+    #trois_masks(img1)
+    #trois_masks(img2)
     aire, cx, cy, entre = entree(img)
     plt.figure('entrée')
     plt.imshow(entre)
