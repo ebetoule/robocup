@@ -39,14 +39,17 @@ def detect_obstacle():
         obstacle = False
     
 def detect_zone():
-    global zone
-    aire, cx, cy, _ = analyse.entree(frame)
-    print(aire, cy)
-    if aire is not None:
-        if aire > 25 and aire < 40 and cy > 200:
-            zone = True
-        else:
-            zone = False
+    global zone, frame
+    while zone == False:
+        with lock:
+            framecopy = frame.copy
+        aire, cx, cy, _ = analyse.entree(framecopy)
+        #print(aire, cy)
+        if aire is not None:
+            if aire > 25 and aire < 40 and cy > 200:
+                zone = True
+            else:
+                zone = False
 
 def commencer():
     global detection_intersection
@@ -54,6 +57,11 @@ def commencer():
     ana_thread = threading.Thread(target=detecter, daemon=True)
     ana_thread.start()
 
+def demarrer_zone():
+    global zone
+    z_thread = threading.Thread(target=detect_zone, daemon=True)
+    z_thread.start()
+    
 def detecter():
     global intersection, frame, fin
     while detection_intersection:
@@ -199,6 +207,7 @@ def main():
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
     dr.demarrer()
     commencer()
+    demarrer_zone()
     last = time.time()
     try:
         while demarrage.en_marche:
@@ -207,7 +216,6 @@ def main():
                 frame = picam2.capture_array()#prise de l'image qui va être traitée
             etat_courant = etats[etat_courant['etat']](frame, etat_courant)
             detect_obstacle()
-            detect_zone()
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()

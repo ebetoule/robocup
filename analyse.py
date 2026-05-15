@@ -19,7 +19,7 @@ def detect_argent(frame):
     lower_gray = np.array([0,0,0])
     upper_gray = np.array([15,255,255])
     mask = cv2.inRange(hsv, lower_gray, upper_gray)
-    res = cv2.bitwise_and(img,img, mask=mask)
+    res = cv2.bitwise_and(frame,frame, mask=mask)
     return mask
 #     kernel = np.ones((3,3), np.uint8)
 #     lower_black = np.array([0, 0, 0])
@@ -54,6 +54,7 @@ def entree(frame):
             bb = [] 
             rect = cv2.minAreaRect(data)
             M = cv2.moments(data)
+            assert M['m00'] != 0
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             box = cv2.boxPoints(rect)
@@ -69,7 +70,7 @@ def entree(frame):
             cxs.append(cx)
             cys.append(cy)
         except Exception as E:
-            print(E)
+            pass #print(E)
     if len(aires)>0:
         imax = np.argmax(np.array(aires))
         bcx = np.array(cxs)[imax]
@@ -102,6 +103,10 @@ def centre_inter(tabtheta, lsr):
     cos2 = np.cos(theta2)
     sin1 = np.sin(theta1)
     sin2 = np.sin(theta2)
+    assert cos1 != 0
+    assert sin2 != 0
+    assert cos2 != 0
+    assert sin1 != 0
     y = (r2 * cos1 - cos2 * r1) / (sin2 * cos1 - cos2 * sin1)
     x = (r1 - sin1 * y) / cos1
     return int(x), int(y)
@@ -223,6 +228,7 @@ def detectfin(frame):
             if area > 2000:
                 rect = cv2.minAreaRect(data)
                 M = cv2.moments(data)
+                assert M['m00'] != 0
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
                 box = cv2.boxPoints(rect)
@@ -238,11 +244,10 @@ def detectfin(frame):
                     bcx = cx
                     bcy = cy
                     aa = aire
-                print('aire = ', airef)
-                if airef > 30 and airef < 40:
+                if airef > 30 and airef < 50:
                     return bcx, bcy
         except Exception as E:
-            print(E)
+            pass #print(E)
     return None
 
 def draw_fin(img, centre):
@@ -268,11 +273,12 @@ def detectcarre(frame):
             area = cv2.contourArea(data)
             if area > 1000:
                 M = cv2.moments(data)
+                assert M["m00"] != 0
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
                 carre.append([cx, cy])
         except Exception as E:
-            print(E)
+            pass #print(E)
     return mask, carre
 
 def carre_bon(frame, centre):
@@ -370,6 +376,7 @@ def ligne_droite(frame):
             area = cv2.contourArea(data)
             if area > 1000:
                 M = cv2.moments(data)
+                assert M["m00"] != 0
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
                 #print(f'{cx=},{cy=}')
@@ -385,7 +392,7 @@ def ligne_droite(frame):
                     if w < 150:
                         return (x+w/2, y+h), (x+w/2, y)
         except Exception as E:
-            print(E)
+            pass #print(E)
     return None
     
 
@@ -399,6 +406,7 @@ def drawsegments(linesP, imgl, color=(0,0,255)):
 def segment2rtheta(xa, ya, xb, yb):
     """prend les coords x, y de deux points et renvoie le rayon et l'angle de la droite"""
     #tan_theta = (xb - xa)/(ya - yb)
+    #assert (yb - ya) != 0
     theta = np.arctan((xa - xb) / (yb - ya))#tan_theta)
     r = (xa+xb) * np.cos(theta)+ (ya+yb) * np.sin(theta)
     r = r/2
