@@ -16,28 +16,39 @@ def draw_result(frame, result):
 
 def detect_argent(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((3,3), np.uint8)
-    lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 250, 50])
-    mask1 = cv2.inRange(hsv, lower_black, upper_black)
-    mask1 = cv2.morphologyEx(mask1, cv2.MORPH_OPEN, kernel, iterations=6)
-    mask1 = cv2.morphologyEx(mask1, cv2.MORPH_DILATE, kernel, iterations=9)
-    lower_white = np.array([95,50,150])
-    upper_white = np.array([160,100,255])
-    mask2 = cv2.inRange(hsv, lower_white, upper_white)
-    mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel, iterations=6)
-    mask2 = cv2.morphologyEx(mask2, cv2.MORPH_DILATE, kernel, iterations=9)
-    mask3 = cv2.bitwise_or(mask1, mask2)   # Noir OU Blanc
-    mask4 = cv2.bitwise_not(mask3)
-    return mask1, mask2, mask4
+    lower_gray = np.array([0,0,0])
+    upper_gray = np.array([15,255,255])
+    mask = cv2.inRange(hsv, lower_gray, upper_gray)
+    res = cv2.bitwise_and(img,img, mask=mask)
+    return mask
+#     kernel = np.ones((3,3), np.uint8)
+#     lower_black = np.array([0, 0, 0])
+#     upper_black = np.array([180, 250, 50])
+#     mask1 = cv2.inRange(hsv, lower_black, upper_black)
+#     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_OPEN, kernel, iterations=6)
+#     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_DILATE, kernel, iterations=9)
+#     lower_white = np.array([95,50,150])
+#     upper_white = np.array([160,100,255])
+#     mask2 = cv2.inRange(hsv, lower_white, upper_white)
+#     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel, iterations=6)
+#     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_DILATE, kernel, iterations=9)
+#     mask3 = cv2.bitwise_or(mask1, mask2)   # Noir OU Blanc
+#     mask4 = cv2.bitwise_not(mask3)
+    #return mask1, mask2, mask4
 
 def entree(frame):
-    #_, _, mask = detect_argent(frame)
-    mask = frame.copy()
-    frame2 = frame[200:480,:,:].copy()
+    mask = detect_argent(frame)
+    mask1 = frame.copy()
+#     vid_gray = cv2.cvtColor(mask1, cv2.COLOR_BGR2GRAY)
+#     blur = cv2.GaussianBlur(vid_gray, (5,5), 0)
+#     mask = cv2.Canny(blur, 80, 90, apertureSize= 3)
+    #ret, mask = cv2.threshold(vid_gray, 100, 255, cv2.THRESH_BINARY)
     contours,hierarchy = cv2.findContours(mask, 1, 2)
     aa = 0
     airef = None
+    aires = []
+    cxs = []
+    cys = []
     for data in contours:
         try:
             bb = [] 
@@ -47,22 +58,24 @@ def entree(frame):
             cy = int(M['m01']/M['m00'])
             box = cv2.boxPoints(rect)
             box = np.intp(box)
-            cv2.drawContours(frame2,[box],0,(0,0,255),2)
+            cv2.drawContours(mask1,[box],0,(0,0,255),2)
             for i in range(len(box)):
                 x, y = cg.image2damier(box[i][0], box[i][1])
                 bb.append([x, y])
             l1 = longueur_ligne([bb[0] + bb[1]])
             l2 = longueur_ligne([bb[1] + bb[2]])
             aire = l1 * l2
-            if aire > aa:
-                airef = aire
-                bcx = cx
-                bcy = cy
-            aa = aire
+            aires.append(aire)
+            cxs.append(cx)
+            cys.append(cy)
         except Exception as E:
             print(E)
-    if airef is not None:
-        return airef, bcx, bcy, frame2#à enlever
+    if len(aires)>0:
+        imax = np.argmax(np.array(aires))
+        bcx = np.array(cxs)[imax]
+        bcy = np.array(cys)[imax]
+        aire = aires[imax]
+        return aire, bcx, bcy, mask1#à enlever
     else:
         return None, None, None, None
     
@@ -571,12 +584,17 @@ if __name__ == '__main__':
 #     resultat = intersections.gestion_intersection(img)
 
     # test de detect argent
-    trois_masks(img)
+    #trois_masks(img)
+    arg = detect_argent(img)
+    plt.figure('argent')
+    plt.imshow(arg)
     #trois_masks(img1)
     #trois_masks(img2)
-    aire, cx, cy, entre = entree(img)
+    aire, cx, cy, entre, noir = entree(img)
     plt.figure('entrée')
     plt.imshow(entre)
+    plt.figure('noir et blanc')
+    plt.imshow(noir)
     print(aire, cx, cy)
 #     print(coins)
 #     print('laire est de', aire)
