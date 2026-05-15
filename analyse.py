@@ -222,7 +222,8 @@ def detectfin(frame):
                 bcx = cx
                 bcy = cy
                 aa = aire
-            return bcx, bcy, airef
+            if airef > 30 and airef < 40:
+                return bcx, bcy
         except Exception as E:
             print(E)
     return None
