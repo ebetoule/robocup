@@ -200,14 +200,29 @@ def detectrouge(frame):
 def detectfin(frame):
     mask = detectrouge(frame)
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    airef = None
+    aa = 0
     for data in contours:
+        bb = [] 
         try:
-            area = cv2.contourArea(data)
-            if area > 1000:
-                M = cv2.moments(data)
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
-                return cx, cy
+            rect = cv2.minAreaRect(data)
+            M = cv2.moments(data)
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
+            box = cv2.boxPoints(rect)
+            box = np.intp(box)
+            for i in range(len(box)):
+                x, y = cg.image2damier(box[i][0], box[i][1])
+                bb.append([x, y])
+            l1 = longueur_ligne([bb[0] + bb[1]])
+            l2 = longueur_ligne([bb[1] + bb[2]])
+            aire = l1 * l2
+            if aire > aa:
+                airef = aire
+                bcx = cx
+                bcy = cy
+                aa = aire
+            return bcx, bcy, airef
         except Exception as E:
             print(E)
     return None
