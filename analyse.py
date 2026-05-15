@@ -205,25 +205,28 @@ def detectfin(frame):
     for data in contours:
         bb = [] 
         try:
-            rect = cv2.minAreaRect(data)
-            M = cv2.moments(data)
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            box = cv2.boxPoints(rect)
-            box = np.intp(box)
-            for i in range(len(box)):
-                x, y = cg.image2damier(box[i][0], box[i][1])
-                bb.append([x, y])
-            l1 = longueur_ligne([bb[0] + bb[1]])
-            l2 = longueur_ligne([bb[1] + bb[2]])
-            aire = l1 * l2
-            if aire > aa:
-                airef = aire
-                bcx = cx
-                bcy = cy
-                aa = aire
-            if airef > 30 and airef < 40:
-                return bcx, bcy
+            area = cv2.contourArea(data)
+            if area > 100:
+                rect = cv2.minAreaRect(data)
+                M = cv2.moments(data)
+                cx = int(M['m10']/M['m00'])
+                cy = int(M['m01']/M['m00'])
+                box = cv2.boxPoints(rect)
+                box = np.intp(box)
+                for i in range(len(box)):
+                    x, y = cg.image2damier(box[i][0], box[i][1])
+                    bb.append([x, y])
+                l1 = longueur_ligne([bb[0] + bb[1]])
+                l2 = longueur_ligne([bb[1] + bb[2]])
+                aire = l1 * l2
+                if aire > aa:
+                    airef = aire
+                    bcx = cx
+                    bcy = cy
+                    aa = aire
+                print('aire = ', airef)
+                if airef > 30 and airef < 40:
+                    return bcx, bcy
         except Exception as E:
             print(E)
     return None

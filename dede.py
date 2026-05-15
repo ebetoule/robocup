@@ -60,9 +60,7 @@ def detecter():
         with lock:
             framecopy = frame.copy()
         fin1 = analyse.detectfin(framecopy)
-        print('aire =', fin1[2]) 
         if fin1 is not None and fin1[1] > 300 :
-            if fin1[2] > 30 and fin1[2] < 40:
             #print('fin detectée')
                 fin = True
         theta3, x, y, _, _, _ = inter.detect_inter(framecopy)
@@ -225,8 +223,7 @@ def main():
                 #break
             if fin:
                 print('fin du parcours')
-                x, y, _ = analyse.detectfin(frame.copy())
-                p1 = (x,y)
+                p1 = analyse.detectfin(frame.copy())
                 p2 = p1
                 cg.go(p1, p2)
                 demarrage.en_marche = False
