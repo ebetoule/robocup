@@ -32,7 +32,8 @@ def detect_argent(frame):
     return mask1, mask2, mask4
 
 def entree(frame):
-    _, _, mask = detect_argent(frame)
+    #_, _, mask = detect_argent(frame)
+    mask = frame.copy()
     frame2 = frame[200:480,:,:].copy()
     contours,hierarchy = cv2.findContours(mask, 1, 2)
     aa = 0
@@ -206,7 +207,7 @@ def detectfin(frame):
         bb = [] 
         try:
             area = cv2.contourArea(data)
-            if area > 100:
+            if area > 2000:
                 rect = cv2.minAreaRect(data)
                 M = cv2.moments(data)
                 cx = int(M['m10']/M['m00'])

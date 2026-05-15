@@ -43,7 +43,7 @@ def detect_zone():
     aire, cx, cy, _ = analyse.entree(frame)
     print(aire, cy)
     if aire is not None:
-        if aire > 25 and cy > 200:
+        if aire > 25 and aire < 40 and cy > 200:
             zone = True
         else:
             zone = False
@@ -211,16 +211,16 @@ def main():
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()
-            #if zone:
-                #print('entrée dans la zone')
-                #aire, cx, cy, _ = analyse.entree(frame)
-                #p1 = cx, cy
-                #p2 = p1
-                #cg.go(p1, p2)
-                #print(p1, p2)
-                #sorti()
-                #demarrage.en_marche = False
-                #break
+            if zone:
+                print('entrée dans la zone')
+                aire, cx, cy, _ = analyse.entree(frame)
+                p1 = cx, cy
+                p2 = p1
+                cg.go(p1, p2)
+                print(p1, p2)
+                sorti()
+                demarrage.en_marche = False
+                break
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(frame.copy())
