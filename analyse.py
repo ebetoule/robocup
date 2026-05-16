@@ -74,7 +74,13 @@ def aire_max(contours):
         return aire, bcx, bcy
     else:
         return None, None, None
-        
+
+def detect_sorti(frame):
+    mask = detectligne(frame)
+    contours,hierarchy = cv2.findContours(mask, 1, 2)
+    aire, bcx, bcy = aire_max(contours)
+    print('aire noir', aire)
+    return aire, bcx, bcy
         
 def entree(frame):
     mask = detect_argent(frame)
@@ -85,7 +91,7 @@ def entree(frame):
     #ret, mask = cv2.threshold(vid_gray, 100, 255, cv2.THRESH_BINARY)
     contours,hierarchy = cv2.findContours(mask, 1, 2)
     aire, bcx, bcy = aire_max(contours)
-    print('aire = ', aire, 'coord =', bcx, bcy)
+    #print('aire = ', aire, 'coord =', bcx, bcy)
     return aire, bcx, bcy, mask1#à enlever
     
 def detectligne(frame):

@@ -41,10 +41,10 @@ def detect_obstacle():
 def detect_zone(frame):
     global zone
     aire, cx, cy, _ = analyse.entree(frame)
-    #print(aire, cy)
     if aire is not None:
-        if aire > 25 and aire < 100 and cy > 200:
-            zone = True
+        if aire > 25 and aire < 100:
+            if cy > 200:
+                zone = True
         else:
             zone = False
 
@@ -96,21 +96,31 @@ def perte_de_la_ligne(frame, etat_courant):
     etat_courant['etat'] = 'recherche'
     return etat_courant
 
-def sorti():
+def sorti(frame, etat_courant):
     sorti = False
-    with lock:
-        frame = picam2.capture_array()
-    ligne = analyse.ligne_droite(frame)
-    sorti = False
+    print('cherche la sortie')
+    dr.aller(30)
+    print('avancer!')
+    dr.tourner(90)
+    print('tour effectué')
+    dr.aller(50)
+    print('atteint du milieu')
     while not sorti:
-        if ligne is not None :
-            p1, p2 = ligne
-            #print(f'{p1=},{p2=}')
-            cg.go(p1, p2)
-            sorti = True
-        else:
-            dr.tourner(5)
-            sorti = False
+        try:
+            aire, cx, cy = analyse.detect_sorti(frame)
+            if aire is not None :
+                if aire > 80 and aire < 100:
+                #print(f'{p1=},{p2=}')
+                    cg.go((cx, cy), (cx, cy))
+                    sorti = True
+            else:
+                dr.tourner(5)
+                sorti = False
+        except KeyboardInterrupt:
+            break
+        finally:
+            etat_courant['etat'] = 'suivi'
+        
         
 def recherche(frame, etat_courant):
     print('recherche de ligne')
@@ -219,9 +229,7 @@ def main():
                 p2 = p1
                 cg.go(p1, p2)
                 print(p1, p2)
-                sorti()
-                demarrage.en_marche = False
-                break
+                etat_courant['etat'] = 'sorti'
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(framecopy)
