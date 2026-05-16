@@ -14,10 +14,10 @@ def draw_result(frame, result):
         return img_ana
     return frame
 
-def detect_argent(hsv):
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_gray = np.array([0,0,100])
-    upper_gray = np.array([200,150,255])
+def detect_argent(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lower_gray = np.array([0,25,60])
+    upper_gray = np.array([255,150,150])
     mask = cv2.inRange(hsv, lower_gray, upper_gray)
     kernel = np.ones((3,3), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=6)
@@ -94,7 +94,7 @@ def entree(frame):
     
 def detectligne(hsv):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([180, 250, 100])
     mask = cv2.inRange(hsv, lower_black, upper_black)
@@ -214,7 +214,7 @@ def trois_masks(frame):
     plt.show()
     
 def detectrouge(hsv):
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red1 = np.array([0, 200, 50])
     upper_red1 = np.array([10, 255, 255])
     lower_red2 = np.array([170, 200, 50])
@@ -241,7 +241,7 @@ def draw_fin(img, centre):
     return mask
 
 def detectvert(hsv):
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     min_vert = np.array([50, 50, 50])#Teinte, saturation, value
     max_vert = np.array([90, 255, 255])
     mask = cv2.inRange(hsv, min_vert, max_vert)
