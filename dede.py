@@ -43,7 +43,7 @@ def detect_zone(frame):
     aire, cx, cy, _ = analyse.entree(frame)
     #print(aire, cy)
     if aire is not None:
-        if aire > 25 and aire < 40 and cy > 200:
+        if aire > 25 and aire < 100 and cy > 200:
             zone = True
         else:
             zone = False
@@ -59,12 +59,11 @@ def detecter():
     while detection_intersection:
         with lock:
             framecopy = frame.copy()
-        hsv = cv2.cvtColor(framecopy, cv2.COLOR_BGR2HSV)
-        fin1 = analyse.detectfin(hsv)
+        fin1 = analyse.detectfin(frame)
         if fin1 is not None and fin1[1] > 300 :
             #print('fin detectée')
                 fin = True
-        theta3, x, y, _, _, _ = inter.detect_inter(hsv)
+        theta3, x, y, _, _, _ = inter.detect_inter(frame)
         #print(theta3)
         #time.sleep(0.05)
         #contours, mask, carre = analyse.detectcarre(framecopy)
@@ -74,7 +73,7 @@ def detecter():
         else:
             intersection = False
             #print("on a pas d'intersection")
-        detect_zone(hsv)
+        detect_zone(frame)
 
 def temps():
     global last
@@ -87,8 +86,7 @@ def temps():
 def perte_de_la_ligne(frame, etat_courant):
     print('recherche de pointillés')
     dernier = etat_courant['barycentre']
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    ligne = analyse.ligne_droite(hsv)
+    ligne = analyse.ligne_droite(frame)
     if ligne is not None :
         p1, p2 = ligne
         #print(f'{p1=},{p2=}')
@@ -211,13 +209,12 @@ def main():
             etat_courant = etats[etat_courant['etat']](frame, etat_courant)
             detect_obstacle()
             framecopy = frame.copy()
-            hsv = cv2.cvtColor(framecopy, cv2.COLOR_BGR2HSV)
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()
             if zone:
                 print('entrée dans la zone')
-                aire, cx, cy, _ = analyse.entree(hsv)
+                aire, cx, cy, _ = analyse.entree(framecopy)
                 p1 = cx, cy
                 p2 = p1
                 cg.go(p1, p2)
@@ -227,7 +224,7 @@ def main():
                 break
             if fin:
                 print('fin du parcours')
-                p1 = analyse.detectfin(hsv)
+                p1 = analyse.detectfin(framecopy)
                 p2 = p1
                 cg.go(p1, p2)
                 demarrage.en_marche = False
@@ -236,7 +233,7 @@ def main():
             if intersection:
                 #dr.stop()
                 dr.avancer(0)
-                resultat = inter.gestion_intersection(hsv)
+                resultat = inter.gestion_intersection(framecopy)
                 if resultat is not None:
                     p1 = resultat['centre']
                     p2 = resultat['direction finale'][0]

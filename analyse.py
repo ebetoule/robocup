@@ -17,7 +17,7 @@ def draw_result(frame, result):
 def detect_argent(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_gray = np.array([0,25,60])
-    upper_gray = np.array([255,150,150])
+    upper_gray = np.array([250,150,150])
     mask = cv2.inRange(hsv, lower_gray, upper_gray)
     kernel = np.ones((3,3), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=6)
@@ -84,12 +84,8 @@ def entree(frame):
 #     mask = cv2.Canny(blur, 80, 90, apertureSize= 3)
     #ret, mask = cv2.threshold(vid_gray, 100, 255, cv2.THRESH_BINARY)
     contours,hierarchy = cv2.findContours(mask, 1, 2)
-    aa = 0
-    airef = None
-    aires = []
-    cxs = []
-    cys = []
     aire, bcx, bcy = aire_max(contours)
+    print('aire = ', aire, 'coord =', bcx, bcy)
     return aire, bcx, bcy, mask1#à enlever
     
 def detectligne(hsv):
