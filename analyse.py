@@ -88,7 +88,7 @@ def entree(frame):
     print('aire = ', aire, 'coord =', bcx, bcy)
     return aire, bcx, bcy, mask1#à enlever
     
-def detectligne(hsv):
+def detectligne(frame):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_black = np.array([0, 0, 0])
@@ -209,7 +209,7 @@ def trois_masks(frame):
     axes[2].set_title('argent')
     plt.show()
     
-def detectrouge(hsv):
+def detectrouge(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red1 = np.array([0, 200, 50])
     upper_red1 = np.array([10, 255, 255])
@@ -236,7 +236,7 @@ def draw_fin(img, centre):
         cv2.circle(mask, (centre), 10, (255,255,255), -1)
     return mask
 
-def detectvert(hsv):
+def detectvert(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     min_vert = np.array([50, 50, 50])#Teinte, saturation, value
     max_vert = np.array([90, 255, 255])
