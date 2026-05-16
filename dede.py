@@ -38,40 +38,33 @@ def detect_obstacle():
     else:
         obstacle = False
     
-def detect_zone():
-    global zone, frame
-    while zone == False:
-        with lock:
-            framecopy = frame.copy
-        aire, cx, cy, _ = analyse.entree(framecopy)
-        #print(aire, cy)
-        if aire is not None:
-            if aire > 25 and aire < 40 and cy > 200:
-                zone = True
-            else:
-                zone = False
+def detect_zone(frame):
+    global zone
+    aire, cx, cy, _ = analyse.entree(frame)
+    #print(aire, cy)
+    if aire is not None:
+        if aire > 25 and aire < 40 and cy > 200:
+            zone = True
+        else:
+            zone = False
 
 def commencer():
     global detection_intersection
     detection_intersection = True
     ana_thread = threading.Thread(target=detecter, daemon=True)
     ana_thread.start()
-
-def demarrer_zone():
-    global zone
-    z_thread = threading.Thread(target=detect_zone, daemon=True)
-    z_thread.start()
     
 def detecter():
     global intersection, frame, fin
     while detection_intersection:
         with lock:
             framecopy = frame.copy()
-        fin1 = analyse.detectfin(framecopy)
+        hsv = cv2.cvtColor(framecopy, cv2.COLOR_BGR2HSV)
+        fin1 = analyse.detectfin(hsv)
         if fin1 is not None and fin1[1] > 300 :
             #print('fin detectée')
                 fin = True
-        theta3, x, y, _, _, _ = inter.detect_inter(framecopy)
+        theta3, x, y, _, _, _ = inter.detect_inter(hsv)
         #print(theta3)
         #time.sleep(0.05)
         #contours, mask, carre = analyse.detectcarre(framecopy)
@@ -81,6 +74,7 @@ def detecter():
         else:
             intersection = False
             #print("on a pas d'intersection")
+        detect_zone(hsv)
 
 def temps():
     global last
@@ -93,7 +87,8 @@ def temps():
 def perte_de_la_ligne(frame, etat_courant):
     print('recherche de pointillés')
     dernier = etat_courant['barycentre']
-    ligne = analyse.ligne_droite(frame)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    ligne = analyse.ligne_droite(hsv)
     if ligne is not None :
         p1, p2 = ligne
         #print(f'{p1=},{p2=}')
@@ -207,7 +202,6 @@ def main():
         enregistrement.demarrer(size=(640, 480))# démarrer l'écriture du film
     dr.demarrer()
     commencer()
-    demarrer_zone()
     last = time.time()
     try:
         while demarrage.en_marche:
@@ -216,12 +210,14 @@ def main():
                 frame = picam2.capture_array()#prise de l'image qui va être traitée
             etat_courant = etats[etat_courant['etat']](frame, etat_courant)
             detect_obstacle()
+            framecopy = frame.copy()
+            hsv = cv2.cvtColor(framecopy, cv2.COLOR_BGR2HSV)
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()
             if zone:
                 print('entrée dans la zone')
-                aire, cx, cy, _ = analyse.entree(frame)
+                aire, cx, cy, _ = analyse.entree(hsv)
                 p1 = cx, cy
                 p2 = p1
                 cg.go(p1, p2)
@@ -231,7 +227,7 @@ def main():
                 break
             if fin:
                 print('fin du parcours')
-                p1 = analyse.detectfin(frame.copy())
+                p1 = analyse.detectfin(hsv)
                 p2 = p1
                 cg.go(p1, p2)
                 demarrage.en_marche = False
@@ -240,7 +236,7 @@ def main():
             if intersection:
                 #dr.stop()
                 dr.avancer(0)
-                resultat = inter.gestion_intersection(frame)
+                resultat = inter.gestion_intersection(hsv)
                 if resultat is not None:
                     p1 = resultat['centre']
                     p2 = resultat['direction finale'][0]

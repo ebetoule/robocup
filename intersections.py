@@ -32,7 +32,7 @@ def detect_inter(img):
     imgl, lines = analyse.detectdroite(img)
     if lines is None or len(lines) < 2:
         return None, None, None, None, None, None
-    thetagroup, rgroup = analyse.groupir2(lines, img)
+    thetagroup, rgroup = analyse.groupir2(lines)
     theta3 = np.degrees(thetagroup[1]-thetagroup[0])
     if abs(abs(theta3) - 90) < 10:
         x, y = analyse.centre_inter(thetagroup, rgroup)

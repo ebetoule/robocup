@@ -14,12 +14,12 @@ def draw_result(frame, result):
         return img_ana
     return frame
 
-def detect_argent(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+def detect_argent(hsv):
+    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_gray = np.array([0,0,0])
     upper_gray = np.array([15,255,255])
     mask = cv2.inRange(hsv, lower_gray, upper_gray)
-    res = cv2.bitwise_and(frame,frame, mask=mask)
+    res = cv2.bitwise_and(hsv,hsv, mask=mask)
     return mask
 #     kernel = np.ones((3,3), np.uint8)
 #     lower_black = np.array([0, 0, 0])
@@ -36,14 +36,7 @@ def detect_argent(frame):
 #     mask4 = cv2.bitwise_not(mask3)
     #return mask1, mask2, mask4
 
-def entree(frame):
-    mask = detect_argent(frame)
-    mask1 = frame.copy()
-#     vid_gray = cv2.cvtColor(mask1, cv2.COLOR_BGR2GRAY)
-#     blur = cv2.GaussianBlur(vid_gray, (5,5), 0)
-#     mask = cv2.Canny(blur, 80, 90, apertureSize= 3)
-    #ret, mask = cv2.threshold(vid_gray, 100, 255, cv2.THRESH_BINARY)
-    contours,hierarchy = cv2.findContours(mask, 1, 2)
+def aire_max(contours):
     aa = 0
     airef = None
     aires = []
@@ -59,7 +52,7 @@ def entree(frame):
             cy = int(M['m01']/M['m00'])
             box = cv2.boxPoints(rect)
             box = np.intp(box)
-            cv2.drawContours(mask1,[box],0,(0,0,255),2)
+            #cv2.drawContours(mask1,[box],0,(0,0,255),2)
             for i in range(len(box)):
                 x, y = cg.image2damier(box[i][0], box[i][1])
                 bb.append([x, y])
@@ -76,13 +69,30 @@ def entree(frame):
         bcx = np.array(cxs)[imax]
         bcy = np.array(cys)[imax]
         aire = aires[imax]
-        return aire, bcx, bcy, mask1#à enlever
+        return aire, bcx, bcy
     else:
-        return None, None, None, None
+        return None, None, None
+        
+        
+def entree(frame):
+    mask = detect_argent(frame)
+    mask1 = frame.copy()
+#     vid_gray = cv2.cvtColor(mask1, cv2.COLOR_BGR2GRAY)
+#     blur = cv2.GaussianBlur(vid_gray, (5,5), 0)
+#     mask = cv2.Canny(blur, 80, 90, apertureSize= 3)
+    #ret, mask = cv2.threshold(vid_gray, 100, 255, cv2.THRESH_BINARY)
+    contours,hierarchy = cv2.findContours(mask, 1, 2)
+    aa = 0
+    airef = None
+    aires = []
+    cxs = []
+    cys = []
+    aire, bcx, bcy = aire_max(contours)
+    return aire, bcx, bcy, mask1#à enlever
     
-def detectligne(frame):
+def detectligne(hsv):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([180, 250, 100])
     mask = cv2.inRange(hsv, lower_black, upper_black)
@@ -103,10 +113,6 @@ def centre_inter(tabtheta, lsr):
     cos2 = np.cos(theta2)
     sin1 = np.sin(theta1)
     sin2 = np.sin(theta2)
-    assert cos1 != 0
-    assert sin2 != 0
-    assert cos2 != 0
-    assert sin1 != 0
     y = (r2 * cos1 - cos2 * r1) / (sin2 * cos1 - cos2 * sin1)
     x = (r1 - sin1 * y) / cos1
     return int(x), int(y)
@@ -205,8 +211,8 @@ def trois_masks(frame):
     axes[2].set_title('argent')
     plt.show()
     
-def detectrouge(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+def detectrouge(hsv):
+    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red1 = np.array([0, 200, 50])
     upper_red1 = np.array([10, 255, 255])
     lower_red2 = np.array([170, 200, 50])
@@ -219,36 +225,12 @@ def detectrouge(frame):
 def detectfin(frame):
     mask = detectrouge(frame)
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    airef = None
-    aa = 0
-    for data in contours:
-        bb = [] 
-        try:
-            area = cv2.contourArea(data)
-            if area > 2000:
-                rect = cv2.minAreaRect(data)
-                M = cv2.moments(data)
-                assert M['m00'] != 0
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
-                box = cv2.boxPoints(rect)
-                box = np.intp(box)
-                for i in range(len(box)):
-                    x, y = cg.image2damier(box[i][0], box[i][1])
-                    bb.append([x, y])
-                l1 = longueur_ligne([bb[0] + bb[1]])
-                l2 = longueur_ligne([bb[1] + bb[2]])
-                aire = l1 * l2
-                if aire > aa:
-                    airef = aire
-                    bcx = cx
-                    bcy = cy
-                    aa = aire
-                if airef > 30 and airef < 50:
-                    return bcx, bcy
-        except Exception as E:
-            pass #print(E)
-    return None
+    aire, bcx, bcy  = aire_max(contours)
+    if aire is not None:
+        if aire > 30 and aire < 50:
+            return bcx, bcy
+    else:
+        return None
 
 def draw_fin(img, centre):
     mask = img.copy()
@@ -256,8 +238,8 @@ def draw_fin(img, centre):
         cv2.circle(mask, (centre), 10, (255,255,255), -1)
     return mask
 
-def detectvert(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+def detectvert(hsv):
+    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     min_vert = np.array([50, 50, 50])#Teinte, saturation, value
     max_vert = np.array([90, 255, 255])
     mask = cv2.inRange(hsv, min_vert, max_vert)
@@ -476,7 +458,7 @@ def deuxun(groups, thetacenters, tabr, thetar, thetast):
         else:
             return thetacenters, rcenters, theta3, 2
         
-def groupir2(lines, img, ngroups=2):
+def groupir2(lines, ngroups=2):
     """ Prend une liste de lines (r, theta) et ne conserve que les lignes principales (2 ou 4).
     Fais la moyenne des lignes par paire. (moyenne de theta, et r)
     """
