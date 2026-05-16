@@ -15,7 +15,7 @@ def draw_result(frame, result):
     return frame
 
 def detect_argent(hsv):
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_gray = np.array([0,0,100])
     upper_gray = np.array([200,150,255])
     mask = cv2.inRange(hsv, lower_gray, upper_gray)
@@ -84,17 +84,13 @@ def entree(frame):
 #     mask = cv2.Canny(blur, 80, 90, apertureSize= 3)
     #ret, mask = cv2.threshold(vid_gray, 100, 255, cv2.THRESH_BINARY)
     contours,hierarchy = cv2.findContours(mask, 1, 2)
-    aa = 0
-    airef = None
-    aires = []
-    cxs = []
-    cys = []
     aire, bcx, bcy = aire_max(contours)
+    print('aire = ', aire, 'coord =', bcx, bcy)
     return aire, bcx, bcy, mask1#à enlever
     
 def detectligne(hsv):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([180, 250, 100])
     mask = cv2.inRange(hsv, lower_black, upper_black)
@@ -214,7 +210,7 @@ def trois_masks(frame):
     plt.show()
     
 def detectrouge(hsv):
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red1 = np.array([0, 200, 50])
     upper_red1 = np.array([10, 255, 255])
     lower_red2 = np.array([170, 200, 50])
@@ -241,7 +237,7 @@ def draw_fin(img, centre):
     return mask
 
 def detectvert(hsv):
-    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     min_vert = np.array([50, 50, 50])#Teinte, saturation, value
     max_vert = np.array([90, 255, 255])
     mask = cv2.inRange(hsv, min_vert, max_vert)
