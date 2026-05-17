@@ -81,9 +81,9 @@ def detect_sorti(frame):
     upper_black = np.array([180, 250, 50])
     mask = cv2.inRange(hsv, lower_black, upper_black)
     contours,hierarchy = cv2.findContours(mask, 1, 2)
-    aire, bcx, bcy, mask = aire_max(contours)
+    aire, bcx, bcy = aire_max(contours)
     print('aire noir', aire)
-    return aire, bcx, bcy, mask
+    return aire, bcx, bcy
         
 def entree(frame):
     mask = detect_argent(frame)
