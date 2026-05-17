@@ -76,11 +76,14 @@ def aire_max(contours):
         return None, None, None
 
 def detect_sorti(frame):
-    mask = detectligne(frame)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lower_black = np.array([0, 0, 0])
+    upper_black = np.array([180, 250, 50])
+    mask = cv2.inRange(hsv, lower_black, upper_black)
     contours,hierarchy = cv2.findContours(mask, 1, 2)
-    aire, bcx, bcy = aire_max(contours)
+    aire, bcx, bcy, mask = aire_max(contours)
     print('aire noir', aire)
-    return aire, bcx, bcy
+    return aire, bcx, bcy, mask
         
 def entree(frame):
     mask = detect_argent(frame)
@@ -499,7 +502,7 @@ def groupir2(lines, ngroups=2):
 def detect_balle(frame):
     frame = frame.copy()
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=0, maxRadius=0)#retourne le centre des balles trouvées et leur rayon
+    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=20, minRadius=55, maxRadius=90)#retourne le centre des balles trouvées et leur rayon
     if circles is not None:
         for x, y, r in circles[0]:
             cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
@@ -510,9 +513,9 @@ if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('test.png')
-    #img1 = cv2.imread('entre2.jpg')
-    #img2 = cv2.imread('entree.jpg')
+    img = cv2.imread('sorti.jpg')
+    #img1 = cv2.imread('balle.jpg')
+    #img2 = cv2.imread('sorti.jpg')
     plt.ion()
     plt.imshow(img)
     
@@ -587,21 +590,25 @@ if __name__ == '__main__':
 #     plt.imshow(draw_direction_finale(directionf, (x, y), img))
 #     resultat = intersections.gestion_intersection(img)
 
-    # test de detect argent
-    #trois_masks(img)
-    arg = detect_argent(img)
-    plt.figure('argent')
-    plt.imshow(arg)
-    #trois_masks(img1)
-    #trois_masks(img2)
-    aire, cx, cy, entre = entree(img)
-    plt.figure('entrée')
-    plt.imshow(entre)
-    print(aire, cx, cy)
+#     # test de detect argent
+#     #trois_masks(img)
+#     arg = detect_argent(img)
+#     plt.figure('argent')
+#     plt.imshow(arg)
+#     #trois_masks(img1)
+#     #trois_masks(img2)
+#     aire, cx, cy, entre = entree(img)
+#     plt.figure('entrée')
+#     plt.imshow(entre)
+#     print(aire, cx, cy)
     
     balle, param = detect_balle(img)
     plt.figure('balles')
     plt.imshow(balle)
+
+    
+    aire, bcx, bcy = detect_sorti(img)
+    print('aire =', aire)
 #     print(coins)
 #     print('laire est de', aire)
 #     plt.figure('contours')
