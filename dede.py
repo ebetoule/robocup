@@ -73,7 +73,8 @@ def detecter():
         else:
             intersection = False
             #print("on a pas d'intersection")
-        detect_zone(frame)
+        if zone != 'terminé':
+            detect_zone(frame)
 
 def temps():
     global last
@@ -105,21 +106,16 @@ def sorti(frame, etat_courant):
     print('tour effectué')
     dr.aller(50)
     print('atteint du milieu')
-    while not sorti:
-        try:
-            aire, cx, cy = analyse.detect_sorti(frame)
-            if aire is not None :
-                if aire > 80 and aire < 100:
-                #print(f'{p1=},{p2=}')
-                    cg.go((cx, cy), (cx, cy))
-                    sorti = True
-            else:
-                dr.tourner(5)
-                sorti = False
-        except KeyboardInterrupt:
-            break
-        finally:
-            etat_courant['etat'] = 'suivi'
+    aire, cx, cy = analyse.detect_sorti(frame)
+    if aire is not None :
+        if aire > 80 and aire < 100:
+        #print(f'{p1=},{p2=}')
+            cg.go((cx, cy), (cx, cy))
+            sorti = True
+    else:
+        dr.tourner(5)
+        sorti = False
+    etat_courant['etat'] = 'sorti'
         
         
 def recherche(frame, etat_courant):
@@ -190,7 +186,7 @@ etats = {'suivi' : suivi,
          }
     
 def main():
-    global last, frame, fin, detection_intersection, obstacle
+    global last, frame, fin, detection_intersection, obstacle, zone
     picam2 = camera.init_pycam()#initialisation de la caméra
     write = True
     fin = False
@@ -222,13 +218,14 @@ def main():
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()
-            if zone:
+            if zone == True:
                 print('entrée dans la zone')
                 aire, cx, cy, _ = analyse.entree(framecopy)
                 p1 = cx, cy
                 p2 = p1
                 cg.go(p1, p2)
                 print(p1, p2)
+                zone = 'terminé'
                 etat_courant['etat'] = 'sorti'
             if fin:
                 print('fin du parcours')

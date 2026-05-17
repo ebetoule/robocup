@@ -4,14 +4,11 @@ from calibration import objpoints
 # from buildhat import Motor
 # motor_right = Motor('A')
 # motor_left = Motor('B')
-imgpoints = np.array([[123., 413.],
-                     [482., 419.],
-                     [124.,  76.],
-                     [487.,  97.]], dtype="float32")
-
-
-
-
+imgpoints = np.array([[154., 446.],
+                     [455., 445.],
+                     [144., 146.],
+                     [466., 146.]], dtype="float32")
+ 
 
 # objpoints = np.array([
 #     [-4, 13],
