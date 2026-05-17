@@ -12,20 +12,11 @@ resultats = {'tout droit' : 0,
               'à droite' : -90,
               'demi-tour' : 180}
 
-def centre_inter(tabtheta, lsr):
-    ''' prend les r et theta des deux droites détectées et calcule
-    leur intersection '''
-    theta1 = tabtheta[0][0]
-    theta2 = tabtheta[1][0]
-    r1 = lsr[0]
-    r2 = lsr[1]
-    cos1 = np.cos(theta1)
-    cos2 = np.cos(theta2)
-    sin1 = np.sin(theta1)
-    sin2 = np.sin(theta2)
-    y = (r2 * cos1 - cos2 * r1) / (sin2 * cos1 - cos2 * sin1)
-    x = (r1 - sin1 * y) / cos1
-    return x, y
+def gestion_zone(img):
+    circles = detect_balle(img)
+    if circles is not None:
+        print('cercle détecté!')
+    return circles[0]
 
 def detect_inter(img):
     #try:
@@ -96,20 +87,6 @@ def get_barycentre(frame, irow, seuil=50):
     barycentre = np.average(np.arange(dim_x), weights=tabimage01[irow, :])
     return barycentre
 
-
-def detectligne(frame):
-    """prend l'image et la transforme pour avoir le moins de bruit possible"""
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    #denoised = cv2.medianBlur(hsv, 5)
-    lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 250, 90])
-    mask = cv2.inRange(hsv, lower_black, upper_black)
-    #kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
-    #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)   # enlève petits points
-    #mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel, iterations=1) # reconnecte un peu
-    #mask = ((frame < 50).all(axis=2)*255).astype('uint8')
-    return mask
-
 def visio(mask, frame):
     """Prend l'image traitée et fait un masque pour qu'on voit ce qu'il détecte"""
     overlay = np.zeros_like(frame)           # même taille que frame
@@ -136,86 +113,6 @@ def intersection(frame, draw=True):
                 l = linesP[i][0]
                 cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
     return  cdstP, linesP
-
-def segment2rtheta(xa, ya, xb, yb):
-    """prend les coords x, y de deux points et renvoie le rayon et l'angle de la droite"""
-    #tan_theta = (xb - xa)/(ya - yb)
-    theta = np.arctan((xa - xb) / (yb - ya))#tan_theta)
-    r = (xa+xb) * np.cos(theta)+ (ya+yb) * np.sin(theta)
-    r = r/2
-    return r, theta
-
-def groupir(lines, ngroups=2):
-    """ Prend une liste de lines (r, theta) et ne conserve que les lignes principales (2 ou 4).
-    Fais la moyenne des lignes par paire. (moyenne de theta, et r)
-    """
-    lines_rs = []
-    thetas = []
-    for l in lines:
-        r, theta = segment2rtheta(l[0][0], l[0][1], l[0][2], l[0][3])
-        lines_rs.append(r)
-        thetas.append(theta)
-    thetast = np.float32(np.array(thetas))
-    tabr = np.float32(np.array(lines_rs))
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
-    flags = cv2.KMEANS_RANDOM_CENTERS
-    thetar = list(zip(thetas, lines_rs))
-    try:
-        compactness,groups,thetacenters = cv2.kmeans(thetast,ngroups,None,criteria,10,flags)
-    except:
-        compactness,groups,thetacenters = cv2.kmeans(thetast,1,None,criteria,10,flags)
-    thetacenters, rcenters, theta3, nbline = deuxun(groups, thetacenters, tabr, thetar, thetast)
-    return thetacenters, rcenters, theta3, nbline, thetast, tabr
-
-def groupir2(lines, ngroups=2):
-    """ Prend une liste de lines (r, theta) et ne conserve que les lignes principales (2 ou 4).
-    Fais la moyenne des lignes par paire. (moyenne de theta, et r)
-    """
-    lines_rs = []
-    thetas = []
-    for l in lines:
-        r, theta = segment2rtheta(l[0][0], l[0][1], l[0][2], l[0][3])
-        lines_rs.append(r)
-        thetas.append(theta)
-    thetast = np.float32(np.array(thetas))
-    x = np.cos(2 * thetast)
-    y = np.sin(2 * thetast)
-    tabr = np.float32(np.array(lines_rs))
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
-    flags = cv2.KMEANS_RANDOM_CENTERS
-    thetar = list(zip(thetas, lines_rs))
-    try:
-        compactness,groups,thetacenters = cv2.kmeans([x, y],ngroups,None,criteria,10,flags)
-    except:
-        compactness,groups,thetacenters = cv2.kmeans(thetast,1,None,criteria,10,flags)
-    thetacenters, rcenters, theta3, nbline = deuxun(groups, thetacenters, tabr, thetar, thetast)
-    return thetacenters, rcenters, theta3, nbline, thetast, tabr
-
-def deuxun(groups, thetacenters, tabr, thetar, thetast):
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
-    flags = cv2.KMEANS_RANDOM_CENTERS
-    if len(groups) == 1:
-        compactness,groups,rcenters = cv2.kmeans(tabr,1,None,criteria,10,flags)
-        return thetacenters, rcenters, 0, 1
-    else:
-        r1 = []
-        r2 = []
-        for i in range(len(thetar)):
-            if groups[i]==0:
-                r1.append(thetar[i])
-            else:
-                r2.append(thetar[i])
-        ls1 = np.array(r1)
-        ls2 = np.array(r2)
-        rcenters = (np.mean(ls1[:,1]),np.mean(ls2[:,1]))
-        theta3 = np.degrees(thetacenters[1][0] - thetacenters[0][0])
-        if abs(abs(theta3) - 90) > 10:
-            compactness,groups,thetacenters = cv2.kmeans(thetast,1,None,criteria,10,flags)
-            compactness,groups,rcenters = cv2.kmeans(tabr,1,None,criteria,10,flags)
-            return thetacenters, rcenters, 0, 1
-        else:
-            return thetacenters, rcenters, theta3, 2
-        
 
 def centers2lines(thetacenters, rcenters, nbline):
     a = np.cos(thetacenters[0][0])

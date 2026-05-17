@@ -73,8 +73,7 @@ def detecter():
         else:
             intersection = False
             #print("on a pas d'intersection")
-        if zone != 'terminé':
-            detect_zone(frame)
+        detect_zone(frame)
 
 def temps():
     global last
@@ -106,17 +105,33 @@ def sorti(frame, etat_courant):
     print('tour effectué')
     dr.aller(50)
     print('atteint du milieu')
-    aire, cx, cy = analyse.detect_sorti(frame)
-    if aire is not None :
-        if aire > 80 and aire < 100:
-        #print(f'{p1=},{p2=}')
-            cg.go((cx, cy), (cx, cy))
-            sorti = True
+    while not sorti:
+        try:
+            aire, cx, cy = analyse.detect_sorti(frame)
+            if aire is not None :
+                if aire > 80 and aire < 100:
+                #print(f'{p1=},{p2=}')
+                    cg.go((cx, cy), (cx, cy))
+                    sorti = True
+            else:
+                dr.tourner(5)
+                sorti = False
+        except KeyboardInterrupt:
+            break
+        finally:
+            etat_courant['etat'] = 'suivi'
+
+def gestion_zone(frame, etat_courant):
+    circles = detect_balle(img)
+    if circles is not None:
+        print('cercle détecté!')
+        for x, y, r in circles[0]:
+            cg.go((x,y)(x,y))
+        etat_courant['nballes'] = 1
+        etat_courant['etat'] = 'zone'
     else:
         dr.tourner(5)
-        sorti = False
-    etat_courant['etat'] = 'sorti'
-        
+        etat_courant['etat'] = 'sorti'
         
 def recherche(frame, etat_courant):
     print('recherche de ligne')
@@ -183,10 +198,11 @@ etats = {'suivi' : suivi,
          'perte de la ligne': perte_de_la_ligne,
          'recherche' : recherche,
          'sorti' : sorti,
+         'zone' : gestion_zone,
          }
     
 def main():
-    global last, frame, fin, detection_intersection, obstacle, zone
+    global last, frame, fin, detection_intersection, obstacle
     picam2 = camera.init_pycam()#initialisation de la caméra
     write = True
     fin = False
@@ -198,6 +214,7 @@ def main():
                     'etat' : 'suivi',
                     'angle recherche': 0,
                     'tour' : 0,
+                    'nballes' : 0,
                     }
     for i in range(10):
         frame = picam2.capture_array()
@@ -218,15 +235,14 @@ def main():
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()
-            if zone == True:
+            if zone:
                 print('entrée dans la zone')
                 aire, cx, cy, _ = analyse.entree(framecopy)
                 p1 = cx, cy
                 p2 = p1
                 cg.go(p1, p2)
                 print(p1, p2)
-                zone = 'terminé'
-                etat_courant['etat'] = 'sorti'
+                etat_courant['etat'] = 'zone'
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(framecopy)

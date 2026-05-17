@@ -496,11 +496,20 @@ def groupir2(lines, ngroups=2):
             rgroup.append(np.mean(thetargroup[i][:,1]))
     return thetagroup, rgroup
 
+def detect_balle(frame):
+    frame = frame.copy()
+    img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20, param1=130, param2=30, minRadius=0, maxRadius=0)#retourne le centre des balles trouvées et leur rayon
+    if circles is not None:
+        for x, y, r in circles[0]:
+            cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
+    return frame, circles
+
 if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('test.png')
+    img = cv2.imread('balle.jpg')
     #img1 = cv2.imread('entre2.jpg')
     #img2 = cv2.imread('entree.jpg')
     plt.ion()
@@ -588,6 +597,10 @@ if __name__ == '__main__':
     plt.figure('entrée')
     plt.imshow(entre)
     print(aire, cx, cy)
+    
+    balle, param = detect_balle(img)
+    plt.figure('balles')
+    plt.imshow(balle)
 #     print(coins)
 #     print('laire est de', aire)
 #     plt.figure('contours')
