@@ -503,13 +503,14 @@ def detect_balle(frame):
     if circles is not None:
         for x, y, r in circles[0]:
             cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
+            print(f'centre ={x,y}, rayon= {r}')
     return frame, circles
 
 if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('balle.jpg')
+    img = cv2.imread('test.png')
     #img1 = cv2.imread('entre2.jpg')
     #img2 = cv2.imread('entree.jpg')
     plt.ion()
