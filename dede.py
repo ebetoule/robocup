@@ -120,7 +120,18 @@ def sorti(frame, etat_courant):
             break
         finally:
             etat_courant['etat'] = 'suivi'
-        
+
+def gestion_zone(frame, etat_courant):
+    circles = detect_balle(img)
+    if circles is not None:
+        print('cercle détecté!')
+        for x, y, r in circles[0]:
+            cg.go((x,y)(x,y))
+        etat_courant['nballes'] = 1
+        etat_courant['etat'] = 'zone'
+    else:
+        dr.tourner(5)
+        etat_courant['etat'] = 'sorti'
         
 def recherche(frame, etat_courant):
     print('recherche de ligne')
@@ -187,6 +198,7 @@ etats = {'suivi' : suivi,
          'perte de la ligne': perte_de_la_ligne,
          'recherche' : recherche,
          'sorti' : sorti,
+         'zone' : gestion_zone,
          }
     
 def main():
@@ -202,6 +214,7 @@ def main():
                     'etat' : 'suivi',
                     'angle recherche': 0,
                     'tour' : 0,
+                    'nballes' : 0,
                     }
     for i in range(10):
         frame = picam2.capture_array()
@@ -229,7 +242,7 @@ def main():
                 p2 = p1
                 cg.go(p1, p2)
                 print(p1, p2)
-                etat_courant['etat'] = 'sorti'
+                etat_courant['etat'] = 'zone'
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(framecopy)
