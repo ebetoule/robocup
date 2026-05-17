@@ -504,7 +504,7 @@ def detect_balle(frame):
         for x, y, r in circles[0]:
             cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
             print(f'centre ={x,y}, rayon= {r}')
-    return frame, circles
+    return circles
 
 if __name__ == '__main__':
     print('jusque là ça va')

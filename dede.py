@@ -73,7 +73,8 @@ def detecter():
         else:
             intersection = False
             #print("on a pas d'intersection")
-        detect_zone(frame)
+        if zone != 'terminé':
+            detect_zone(frame)
 
 def temps():
     global last
@@ -98,40 +99,33 @@ def perte_de_la_ligne(frame, etat_courant):
 
 def sorti(frame, etat_courant):
     sorti = False
-    print('cherche la sortie')
-    dr.aller(30)
-    print('avancer!')
-    dr.tourner(90)
-    print('tour effectué')
-    dr.aller(50)
-    print('atteint du milieu')
-    while not sorti:
-        try:
-            aire, cx, cy = analyse.detect_sorti(frame)
-            if aire is not None :
-                if aire > 80 and aire < 100:
-                #print(f'{p1=},{p2=}')
-                    cg.go((cx, cy), (cx, cy))
-                    sorti = True
-            else:
-                dr.tourner(5)
-                sorti = False
-        except KeyboardInterrupt:
-            break
-        finally:
+    aire, cx, cy = analyse.detect_sorti(frame)
+    if aire is not None :
+        if aire > 80 and aire < 100:
+        #print(f'{p1=},{p2=}')
+            cg.go((cx, cy), (cx, cy))
+            sorti = True
             etat_courant['etat'] = 'suivi'
+        else:
+            dr.tourner(5)
+    else:
+        dr.tourner(5)
+        sorti = False
+    etat_courant['etat'] = 'sorti'
+    return etat_courant
 
 def gestion_zone(frame, etat_courant):
-    circles = detect_balle(img)
+    circles = analyse.detect_balle(frame)
     if circles is not None:
         print('cercle détecté!')
         for x, y, r in circles[0]:
-            cg.go((x,y)(x,y))
+            cg.go((x,y),(x,y))
         etat_courant['nballes'] = 1
-        etat_courant['etat'] = 'zone'
+        etat_courant['etat'] = 'sorti'
     else:
         dr.tourner(5)
-        etat_courant['etat'] = 'sorti'
+        etat_courant['etat'] = 'gestion zone'
+    return etat_courant
         
 def recherche(frame, etat_courant):
     print('recherche de ligne')
@@ -198,11 +192,11 @@ etats = {'suivi' : suivi,
          'perte de la ligne': perte_de_la_ligne,
          'recherche' : recherche,
          'sorti' : sorti,
-         'zone' : gestion_zone,
+         'gestion zone' : gestion_zone,
          }
     
 def main():
-    global last, frame, fin, detection_intersection, obstacle
+    global last, frame, fin, detection_intersection, obstacle, zone
     picam2 = camera.init_pycam()#initialisation de la caméra
     write = True
     fin = False
@@ -229,20 +223,25 @@ def main():
             durees_execution.append(temps())
             with lock:
                 frame = picam2.capture_array()#prise de l'image qui va être traitée
+            print(etat_courant['etat'])
             etat_courant = etats[etat_courant['etat']](frame, etat_courant)
             detect_obstacle()
             framecopy = frame.copy()
             if obstacle:
                 print('obstacle détecté')
                 dr.passage_obstacle()
-            if zone:
+            if zone == True:
+                zone = 'terminé'
                 print('entrée dans la zone')
                 aire, cx, cy, _ = analyse.entree(framecopy)
                 p1 = cx, cy
                 p2 = p1
                 cg.go(p1, p2)
                 print(p1, p2)
-                etat_courant['etat'] = 'zone'
+                dr.aller(30)
+                dr.tourner(90)
+                dr.aller(50)
+                etat_courant['etat'] = 'gestion zone'
             if fin:
                 print('fin du parcours')
                 p1 = analyse.detectfin(framecopy)
