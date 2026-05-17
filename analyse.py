@@ -499,7 +499,7 @@ def groupir2(lines, ngroups=2):
 def detect_balle(frame):
     frame = frame.copy()
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20, param1=130, param2=30, minRadius=0, maxRadius=0)#retourne le centre des balles trouvées et leur rayon
+    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=0, maxRadius=0)#retourne le centre des balles trouvées et leur rayon
     if circles is not None:
         for x, y, r in circles[0]:
             cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
