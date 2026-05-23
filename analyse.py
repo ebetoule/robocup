@@ -513,7 +513,7 @@ if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('sorti.jpg')
+    img = cv2.imread('test.png')
     #img1 = cv2.imread('balle.jpg')
     #img2 = cv2.imread('sorti.jpg')
     plt.ion()
