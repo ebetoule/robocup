@@ -504,16 +504,19 @@ def detect_balle(frame):
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=20, minRadius=55, maxRadius=90)#retourne le centre des balles trouvées et leur rayon
     if circles is not None:
-        for x, y, r in circles[0]:
-            cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
-            print(f'centre ={x,y}, rayon= {r}')
-    return circles
+        #for x, y, r in circles[0][0]:
+        x = circles[0][0][0]
+        y = circles[0][0][1]
+        r = circles[0][0][2]
+        cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
+        print(f'centre ={x,y}, rayon= {r}')
+    return frame, circles
 
 if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('test.png')
+    img = cv2.imread('b5.jpg')
     #img1 = cv2.imread('balle.jpg')
     #img2 = cv2.imread('sorti.jpg')
     plt.ion()
