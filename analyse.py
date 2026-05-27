@@ -14,12 +14,94 @@ def draw_result(frame, result):
         return img_ana
     return frame
 
+def detect_argent(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lower_gray = np.array([0,25,60])
+    upper_gray = np.array([250,150,150])
+    mask = cv2.inRange(hsv, lower_gray, upper_gray)
+    kernel = np.ones((3,3), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=6)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel, iterations=9)
+    #res = cv2.bitwise_and(hsv,hsv, mask=mask)
+    return mask
+#     lower_black = np.array([0, 0, 0])
+#     upper_black = np.array([180, 250, 50])
+#     mask1 = cv2.inRange(hsv, lower_black, upper_black)
+#     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_OPEN, kernel, iterations=6)
+#     mask1 = cv2.morphologyEx(mask1, cv2.MORPH_DILATE, kernel, iterations=9)
+#     lower_white = np.array([95,50,150])
+#     upper_white = np.array([160,100,255])
+#     mask2 = cv2.inRange(hsv, lower_white, upper_white)
+#     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel, iterations=6)
+#     mask2 = cv2.morphologyEx(mask2, cv2.MORPH_DILATE, kernel, iterations=9)
+#     mask3 = cv2.bitwise_or(mask1, mask2)   # Noir OU Blanc
+#     mask4 = cv2.bitwise_not(mask3)
+    #return mask1, mask2, mask4
+
+def aire_max(contours):
+    aa = 0
+    airef = None
+    aires = []
+    cxs = []
+    cys = []
+    for data in contours:
+        try:
+            bb = [] 
+            rect = cv2.minAreaRect(data)
+            M = cv2.moments(data)
+            assert M['m00'] != 0
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
+            box = cv2.boxPoints(rect)
+            box = np.intp(box)
+            #cv2.drawContours(mask1,[box],0,(0,0,255),2)
+            for i in range(len(box)):
+                x, y = cg.image2damier(box[i][0], box[i][1])
+                bb.append([x, y])
+            l1 = longueur_ligne([bb[0] + bb[1]])
+            l2 = longueur_ligne([bb[1] + bb[2]])
+            aire = l1 * l2
+            aires.append(aire)
+            cxs.append(cx)
+            cys.append(cy)
+        except Exception as E:
+            pass #print(E)
+    if len(aires)>0:
+        imax = np.argmax(np.array(aires))
+        bcx = np.array(cxs)[imax]
+        bcy = np.array(cys)[imax]
+        aire = aires[imax]
+        return aire, bcx, bcy
+    else:
+        return None, None, None
+
+def detect_sorti(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lower_black = np.array([0, 0, 0])
+    upper_black = np.array([180, 250, 50])
+    mask = cv2.inRange(hsv, lower_black, upper_black)
+    contours,hierarchy = cv2.findContours(mask, 1, 2)
+    aire, bcx, bcy = aire_max(contours)
+    print('aire noir', aire)
+    return aire, bcx, bcy
+        
+def entree(frame):
+    mask = detect_argent(frame)
+    mask1 = frame.copy()
+#     vid_gray = cv2.cvtColor(mask1, cv2.COLOR_BGR2GRAY)
+#     blur = cv2.GaussianBlur(vid_gray, (5,5), 0)
+#     mask = cv2.Canny(blur, 80, 90, apertureSize= 3)
+    #ret, mask = cv2.threshold(vid_gray, 100, 255, cv2.THRESH_BINARY)
+    contours,hierarchy = cv2.findContours(mask, 1, 2)
+    aire, bcx, bcy = aire_max(contours)
+    #print('aire = ', aire, 'coord =', bcx, bcy)
+    return aire, bcx, bcy, mask1#à enlever
+    
 def detectligne(frame):
     """prend l'image et la transforme pour avoir le moins de bruit possible"""
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    #denoised = cv2.medianBlur(hsv, 5)
     lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 250, 90])
+    upper_black = np.array([180, 250, 100])
     mask = cv2.inRange(hsv, lower_black, upper_black)
     kernel = np.ones((3,3), np.uint8)           # ou (5,1) si ligne horizontale
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=9)   # enlève petits points
@@ -123,6 +205,19 @@ def valeurs_hsv(frame):
         axe.set_title(legende[i])
     plt.show()
     
+def trois_masks(frame):
+    import matplotlib.pyplot as plt
+    ar1, ar2, ar3 = detect_argent(frame)
+    fig = plt.figure()
+    axes = fig.subplots(1,3)
+    axes[0].imshow(ar1)
+    axes[0].set_title('noir')
+    axes[1].imshow(ar2)
+    axes[1].set_title('blanc')
+    axes[2].imshow(ar3)
+    axes[2].set_title('argent')
+    plt.show()
+    
 def detectrouge(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_red1 = np.array([0, 200, 50])
@@ -137,17 +232,12 @@ def detectrouge(frame):
 def detectfin(frame):
     mask = detectrouge(frame)
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    for data in contours:
-        try:
-            area = cv2.contourArea(data)
-            if area > 1000:
-                M = cv2.moments(data)
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
-                return cx, cy
-        except Exception as E:
-            print(E)
-    return None
+    aire, bcx, bcy  = aire_max(contours)
+    if aire is not None:
+        if aire > 30 and aire < 50:
+            return bcx, bcy
+    else:
+        return None
 
 def draw_fin(img, centre):
     mask = img.copy()
@@ -172,11 +262,12 @@ def detectcarre(frame):
             area = cv2.contourArea(data)
             if area > 1000:
                 M = cv2.moments(data)
+                assert M["m00"] != 0
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
                 carre.append([cx, cy])
         except Exception as E:
-            print(E)
+            pass #print(E)
     return mask, carre
 
 def carre_bon(frame, centre):
@@ -261,7 +352,7 @@ def detectdroite(frame):
     if linesP is not None:
         for ligne in linesP:
             longueur = longueur_ligne(ligne)
-            if int(longueur) > 100:
+            if int(longueur) > 150:
                 lines.append(ligne)
     return  imgl, lines
 
@@ -274,6 +365,7 @@ def ligne_droite(frame):
             area = cv2.contourArea(data)
             if area > 1000:
                 M = cv2.moments(data)
+                assert M["m00"] != 0
                 cx = int(M['m10']/M['m00'])
                 cy = int(M['m01']/M['m00'])
                 #print(f'{cx=},{cy=}')
@@ -289,7 +381,7 @@ def ligne_droite(frame):
                     if w < 150:
                         return (x+w/2, y+h), (x+w/2, y)
         except Exception as E:
-            print(E)
+            pass #print(E)
     return None
     
 
@@ -303,6 +395,7 @@ def drawsegments(linesP, imgl, color=(0,0,255)):
 def segment2rtheta(xa, ya, xb, yb):
     """prend les coords x, y de deux points et renvoie le rayon et l'angle de la droite"""
     #tan_theta = (xb - xa)/(ya - yb)
+    #assert (yb - ya) != 0
     theta = np.arctan((xa - xb) / (yb - ya))#tan_theta)
     r = (xa+xb) * np.cos(theta)+ (ya+yb) * np.sin(theta)
     r = r/2
@@ -372,7 +465,7 @@ def deuxun(groups, thetacenters, tabr, thetar, thetast):
         else:
             return thetacenters, rcenters, theta3, 2
         
-def groupir2(lines, img, ngroups=2):
+def groupir2(lines, ngroups=2):
     """ Prend une liste de lines (r, theta) et ne conserve que les lignes principales (2 ou 4).
     Fais la moyenne des lignes par paire. (moyenne de theta, et r)
     """
@@ -406,20 +499,37 @@ def groupir2(lines, img, ngroups=2):
             rgroup.append(np.mean(thetargroup[i][:,1]))
     return thetagroup, rgroup
 
+def detect_balle(frame):
+    frame = frame.copy()
+    img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=20, minRadius=55, maxRadius=90)#retourne le centre des balles trouvées et leur rayon
+    if circles is not None:
+        #for x, y, r in circles[0][0]:
+        x = circles[0][0][0]
+        y = circles[0][0][1]
+        r = circles[0][0][2]
+        cv2.circle(frame, (int(x), int(y)), int(r), (255, 0, 0), 2)
+        print(f'centre ={x,y}, rayon= {r}')
+    return frame, circles
+
 if __name__ == '__main__':
     print('jusque là ça va')
     import matplotlib.pyplot as plt
     plt.close('all')
-    img = cv2.imread('test.png')
+    img = cv2.imread('b5.jpg')
+    #img1 = cv2.imread('balle.jpg')
+    #img2 = cv2.imread('sorti.jpg')
     plt.ion()
-    #plt.imshow(img)
+    plt.imshow(img)
     
     # test de détectligne
     plt.figure('detectline')#mets un titre à la fenêtre qu'on affiche
     mask = detectligne(img)
     plt.imshow(mask)
     valeurs_hsv(img)
-#      #test de detect_vert:
+    #valeurs_hsv(img1)
+    #valeurs_hsv(img2)
+     #test de detect_vert:
 #     plt.figure('vert')
 #     mask2 = detectvert(img)
 #     plt.imshow(mask2)
@@ -433,9 +543,9 @@ if __name__ == '__main__':
         
 
 #     # test de detectdroite
-    plt.figure('detectdroite')
-    imgl, lines = detectdroite(img)
-    plt.imshow(drawsegments(lines, imgl))
+#     plt.figure('detectdroite')
+#     imgl, lines = detectdroite(img)
+#     plt.imshow(drawsegments(lines, imgl))
     
     #test de groupir
 #     thetacenters, rcenters, theta3, nbline, thetast, tabr = groupir(lines)
@@ -452,37 +562,60 @@ if __name__ == '__main__':
 
 
     #test des directions:
-    thetagroup, rgroup = groupir2(lines, img)
-    x, y = centre_inter(thetagroup, rgroup)
-    print(x, y)
-    mask2 = draw_centre_inter(img, x, y)
-    plt.figure('centre')
-    plt.imshow(mask2)
-    dct1 = directions(thetagroup, rgroup)
-    mask1 = draw_directions(dct1, img.copy(), (x, y))
-    plt.figure('directions')
-    plt.imshow(mask1)
-    #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
-    dct = directions_possible(img, thetagroup, rgroup)
+#     thetagroup, rgroup = groupir2(lines, img)
+#     x, y = centre_inter(thetagroup, rgroup)
+#     print(x, y)
+#     mask2 = draw_centre_inter(img, x, y)
+#     plt.figure('centre')
+#     plt.imshow(mask2)
+#     dct1 = directions(thetagroup, rgroup)
+#     mask1 = draw_directions(dct1, img.copy(), (x, y))
+#     plt.figure('directions')
+#     plt.imshow(mask1)
+#     #cv2.circle(img, (int(x), int(y)), 10, (255,0,0), -1)
+#     dct = directions_possible(img, thetagroup, rgroup)
 #    draw_direction_possibles(imgp, (int(x), int(y)), dct)
 #     directionl = direction_à_prendre(dct, (x, y))
 #     plt.figure('directions')
 #     plt.imshow(imgp)
 #     print(directionl)
     # test des carre:
-    carrebon = carre_bon(img, (x, y))
+    #carrebon = carre_bon(img, (x, y))
     #print(f'{len(carrebon)}carrés en dessous du centre:{carrebon}')
     
     # test direction avec carre:
 #     directionc = direction_carre(carrebon, (x, y))
 #     print(directionc)
 #     import intersections
-    directionf = direction_finale(carrebon, dct, (x, y))
-    print('direction finale = ', directionf)
-    plt.figure('direction finale')
-    plt.imshow(draw_direction_finale(directionf, (x, y), img))
-    resultat = intersections.gestion_intersection(img)
+#     directionf = direction_finale(carrebon, dct, (x, y))
+#     print('direction finale = ', directionf)
+#     plt.figure('direction finale')
+#     plt.imshow(draw_direction_finale(directionf, (x, y), img))
+#     resultat = intersections.gestion_intersection(img)
 
+#     # test de detect argent
+#     #trois_masks(img)
+#     arg = detect_argent(img)
+#     plt.figure('argent')
+#     plt.imshow(arg)
+#     #trois_masks(img1)
+#     #trois_masks(img2)
+#     aire, cx, cy, entre = entree(img)
+#     plt.figure('entrée')
+#     plt.imshow(entre)
+#     print(aire, cx, cy)
+    
+    balle, param = detect_balle(img)
+    plt.figure('balles')
+    plt.imshow(balle)
+
+    
+    aire, bcx, bcy = detect_sorti(img)
+    print('aire =', aire)
+#     print(coins)
+#     print('laire est de', aire)
+#     plt.figure('contours')
+#     plt.imshow(cadre)
 #test de groupir2
 #     plt.figure('groups')
 #     imgp, thetagroup, rgroup = groupir2(lines, img, ngroups=2)

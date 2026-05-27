@@ -74,7 +74,7 @@ def passage_obstacle():
     print('depassement3')
     tourner(60)
     print('depassement4')
-    aller(10)
+    aller(15)#à ajuster
     print('depassement5')
     tourner(60)
     aller(20)
