@@ -6,7 +6,7 @@ import numpy as np
 
 motor_right = ModelBasedDCMotorController('B')
 motor_left = ModelBasedDCMotorController('A')
-vitesse = 180
+vitesse = 480
 
 def suivi(frame):
     barycentre = inter.get_barycentre(frame, -5)
